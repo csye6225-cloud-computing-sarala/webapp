@@ -1,4 +1,4 @@
-import { app, sequelize, server } from "../../src/server";
+import { app, sequelize, server } from "../../src/server.js";
 import request from "supertest";
 
 afterAll(async () => {
@@ -12,7 +12,7 @@ jest.mock("sequelize", () => {
   class MockSequelize extends actualSequelize.Sequelize {
     constructor() {
       super("database", "username", "password", {
-        dialect: "mysql",
+        dialect: "postgres",
         logging: false,
       });
       this.authenticate = jest.fn();
@@ -53,10 +53,10 @@ describe("/healthz endpoint", () => {
     sequelize.authenticate.mockClear();
   });
 
-  it("should return 204 if the database connection is successful", async () => {
+  it("should return 200 if the database connection is successful", async () => {
     sequelize.authenticate.mockResolvedValueOnce();
     const response = await request(app).get("/healthz");
-    expect(response.statusCode).toBe(204);
+    expect(response.statusCode).toBe(200);
   });
 
   it("should return 503 if the database connection fails", async () => {
