@@ -1,6 +1,7 @@
 import sequelize from "../config/database.js";
 
 async function handleHealthCheck(req, res) {
+ 
   // Define allowed headers
   const allowedHeaders = [
     "user-agent",
@@ -22,13 +23,16 @@ async function handleHealthCheck(req, res) {
     Object.keys(req.body).length > 0 ||
     hasDisallowedHeaders
   ) {
+    res.setHeader("Cache-Control", "no-cache");
     return res.status(400).end();
   }
   try {
     await sequelize.authenticate();
+    res.setHeader("Cache-Control", "no-cache");
     res.status(200).end();
   } catch (error) {
     console.error("Unable to connect to the database:", error);
+    res.setHeader("Cache-Control", "no-cache");
     res.status(503).end();
   }
 }
