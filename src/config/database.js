@@ -8,6 +8,7 @@ console.log("Environment Variables:", {
   dialect: process.env.DB_DIALECT,
 });
 
+//initializing sequelize object with db credentials
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
