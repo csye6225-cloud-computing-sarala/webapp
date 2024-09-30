@@ -15,22 +15,18 @@ const basicAuth = async (req, res, next) => {
   );
   const [email, password] = credentials.split(":");
 
-  console.log({ email, providedPassword: password }); // Log the credentials for debugging
-
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
 
-    console.log({ dbPassword: user.password }); // Log the password from the database for debugging
-
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
       return res.status(401).json({ message: "Password does not match" });
     }
 
-    req.user = user; // Store the user details in the request object for further use in the route handler
+    req.user = user;
     next();
   } catch (error) {
     console.error("Authentication error:", error);

@@ -1,27 +1,36 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
 
-async function createUser(userData) {
-  const hashedPassword = await bcrypt.hash(userData.password, 8);
-  userData.password = hashedPassword;
-  return User.create(userData);
-}
+// Fetch user data excluding the password
+export const getUserData = async (userId) => {
+  const user = await User.findByPk(userId, {
+    attributes: { exclude: ["password"] },
+  });
+  return user ? user.get({ plain: true }) : null;
+};
 
-async function authenticateUser(email, password) {
-  const user = await User.findOne({ where: { email } });
-  if (!user) {
-    throw new Error("Authentication failed!");
-  }
+// Create a new user
+export const createUser = async (userData) => {
+  const { first_name, last_name, email, password } = userData;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await User.create({
+    first_name,
+    last_name,
+    email,
+    password: hashedPassword,
+  });
+  return user.get({ plain: true });
+};
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    throw new Error("Authentication failed!");
-  }
+// Update user details
+export const updateUserDetails = async (userId, updates) => {
+  const user = await User.findByPk(userId);
+  const { first_name, last_name, password } = updates;
 
-  return user;
-}
+  if (first_name) user.first_name = first_name;
+  if (last_name) user.last_name = last_name;
+  if (password) user.password = await bcrypt.hash(password, 10);
 
-module.exports = {
-  createUser,
-  authenticateUser,
+  await user.save();
+  return user.get({ plain: true, attributes: { exclude: ["password"] } });
 };
