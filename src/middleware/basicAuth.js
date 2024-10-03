@@ -18,7 +18,7 @@ const basicAuth = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const passwordIsValid = await bcrypt.compare(password, user.password);
