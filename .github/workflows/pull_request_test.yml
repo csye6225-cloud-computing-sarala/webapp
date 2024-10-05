@@ -35,19 +35,19 @@ jobs:
       - name: Set up PostgreSQL
         run: |
           sudo service postgresql start
-          if [[ -z "${{ secrets.DB_USER }}" || -z "${{ secrets.DB_PASSWORD }}" ]]; then
+          if [[ -z "${{ secrets.TEST_DB_USER }}" || -z "${{ secrets.TEST_DB_PASSWORD }}" ]]; then
             echo "DB_USER or DB_PASSWORD secret is not set."
             exit 1
           fi
           # Check if the role already exists before creating it
-          sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.DB_USER }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE USER ${{ secrets.DB_USER }} WITH PASSWORD '${{ secrets.DB_PASSWORD }}';"
-          sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${{ secrets.DB_NAME }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.DB_NAME }} OWNER ${{ secrets.DB_USER }};"
+          sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.TEST_DB_USER }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE USER ${{ secrets.TEST_DB_USER }} WITH PASSWORD '${{ secrets.TEST_DB_PASSWORD }}';"
+          sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${{ secrets.TEST_DB_NAME }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.TEST_DB_NAME }} OWNER ${{ secrets.TEST_DB_USER }};"
 
       # Step 6: Run the tests
       - name: Run tests
         env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_HOST: ${{ secrets.TEST_DB_HOST }}
+          DB_USER: ${{ secrets.TEST_DB_USER }}
+          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.TEST_DB_NAME }}
         run: npm test
