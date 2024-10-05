@@ -51,5 +51,4 @@ jobs:
           TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
           TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
           TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
-          TEST_DB_DIALECT: ${{ secrets.TEST_DB_DIALECT }}
         run: npm test
