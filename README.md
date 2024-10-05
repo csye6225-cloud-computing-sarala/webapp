@@ -117,6 +117,8 @@ Run the application in production mode:
 ````bash
 npm start
 
+Created Github Workflow to Install Dependencies on Pull Request
+
 Author
 Sarala Sharanappa Kanakagiri
 `````
