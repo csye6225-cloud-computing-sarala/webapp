@@ -35,6 +35,10 @@ jobs:
       - name: Set up PostgreSQL
         run: |
           sudo service postgresql start
+          if [[ -z "${{ secrets.DB_USER }}" || -z "${{ secrets.DB_PASSWORD }}" ]]; then
+            echo "DB_USER or DB_PASSWORD secret is not set."
+            exit 1
+          fi
           sudo -u postgres psql -c "CREATE USER ${{ secrets.DB_USER }} WITH PASSWORD '${{ secrets.DB_PASSWORD }}';"
           sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.DB_NAME }} OWNER ${{ secrets.DB_USER }};"
 
