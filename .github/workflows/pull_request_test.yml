@@ -46,8 +46,10 @@ jobs:
       # Step 6: Run the tests
       - name: Run tests
         env:
-          DB_HOST: ${{ secrets.TEST_DB_HOST }}
-          DB_USER: ${{ secrets.TEST_DB_USER }}
-          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
-          DB_NAME: ${{ secrets.TEST_DB_NAME }}
+          TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
+          TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+          TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+          TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
+          TEST_DB_DIALECT: ${{ secrets.TEST_DB_DIALECT }}
         run: npm test
