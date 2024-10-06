@@ -117,7 +117,10 @@ Run the application in production mode:
 ````bash
 npm start
 
-Created Github Workflow to Install Dependencies on Pull Request
+Created Github Workflow to Install Dependencies and Run test cases on Pull Request
+Test Run #1
+Test Run #2
+Test Run #3
 
 Author
 Sarala Sharanappa Kanakagiri
