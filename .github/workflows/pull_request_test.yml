@@ -4,7 +4,7 @@ name: Run Tests on Pull Request
 on:
   pull_request:
     branches:
-      - main
+      - "main"
 
 jobs:
   test:
@@ -31,19 +31,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql postgresql-contrib
 
-      # Step 5: Start PostgreSQL service and create a test database
+      # Step 5: Start PostgreSQL service and create or update the test database user
       - name: Set up PostgreSQL
         run: |
           sudo service postgresql start
           if [[ -z "${{ secrets.TEST_DB_USER }}" || -z "${{ secrets.TEST_DB_PASSWORD }}" ]]; then
-            echo "DB_USER or DB_PASSWORD secret is not set."
-            exit 1
+          echo "DB_USER or DB_PASSWORD secret is not set."
+          exit 1
           fi
-          # Check if the role already exists before creating it
-          sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.TEST_DB_USER }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE USER ${{ secrets.TEST_DB_USER }} WITH PASSWORD '${{ secrets.TEST_DB_PASSWORD }}';"
+          if sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.TEST_DB_USER }}';" | grep -q 1; then
+          echo "User exists, altering password..."
+          sudo -u postgres psql -c "ALTER USER ${{ secrets.TEST_DB_USER }} WITH PASSWORD '${{ secrets.TEST_DB_PASSWORD }}';"
+          else
+          echo "User does not exist, creating user..."
+          sudo -u postgres psql -c "CREATE USER ${{ secrets.TEST_DB_USER }} WITH PASSWORD '${{ secrets.TEST_DB_PASSWORD }}';"
+          fi
           sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${{ secrets.TEST_DB_NAME }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.TEST_DB_NAME }} OWNER ${{ secrets.TEST_DB_USER }};"
 
-      # Step 6: Run the tests
+        # Step 6: Run the tests
       - name: Run tests
         env:
           TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
