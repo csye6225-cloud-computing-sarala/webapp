@@ -1,0 +1,55 @@
+name: Packer Template Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  packer-check:
+    name: Packer Format and Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Manually install Packer
+      - name: Install Packer
+        run: |
+          sudo apt-get update && sudo apt-get install -y wget unzip
+          wget https://releases.hashicorp.com/packer/1.8.4/packer_1.8.4_linux_amd64.zip
+          unzip -o packer_1.8.4_linux_amd64.zip -d /usr/local/bin/
+
+      # Step 3: Run packer init to install required plugins
+      - name: Initialize Packer
+        run: |
+          packer init ./packer/ubuntu-24.04.pkr.hcl
+
+      # Step 4: Run packer fmt --check to ensure no formatting issues
+      - name: Check Packer formatting
+        run: |
+          packer fmt -check -diff ./packer
+        # If the packer fmt command makes changes, the workflow will fail.
+
+      # Step 5: Run packer validate to validate the template using GitHub secrets
+      - name: Validate Packer template
+        env:
+          AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
+          AWS_SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
+          AWS_AMI_NAME: ${{ secrets.AWS_AMI_NAME }}
+          AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
+          AWS_SUBNET_ID: ${{ secrets.AWS_SUBNET_ID }}
+          VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
+        run: |
+          packer validate -var "aws_profile=$AWS_PROFILE" \
+                          -var "aws_region=$AWS_REGION" \
+                          -var "aws_instance_type=$AWS_INSTANCE_TYPE" \
+                          -var "aws_source_ami=$AWS_SOURCE_AMI" \
+                          -var "aws_ami_name=$AWS_AMI_NAME" \
+                          -var "aws_vpc_id=$AWS_VPC_ID" \
+                          -var "aws_subnet_id=$AWS_SUBNET_ID" \
+                          -var "volume_size=$VOLUME_SIZE" ./packer/ubuntu-24.04.pkr.hcl
