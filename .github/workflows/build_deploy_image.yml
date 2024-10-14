@@ -58,11 +58,10 @@ jobs:
           TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
           TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
 
-      # Step 6: Build artifact (webapp.zip)
-      - name: Build artifact (webapp.zip)
+      # Step 6: Zip the entire repository
+      - name: Zip application code
         run: |
-          npm run build
-          zip -r webapp.zip dist/
+          zip -r webapp.zip .
 
       # Step 7: Upload artifact (optional)
       - name: Upload webapp artifact
