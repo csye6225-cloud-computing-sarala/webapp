@@ -41,11 +41,12 @@ jobs:
           npm install
           npm run test
         env:
-          DB_USER: "${{ secrets.TEST_DB_USER }}"
-          DB_PASSWORD: "${{ secrets.TEST_DB_PASSWORD }}"
-          DB_HOST: localhost
-          DB_NAME: "${{ secrets.TEST_DB_NAME }}"
-          DB_PORT: 5432
+          env:
+          TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
+          TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+          TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+          TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
 
       # Step 6: Build artifact (webapp.zip)
       - name: Build artifact (webapp.zip)
