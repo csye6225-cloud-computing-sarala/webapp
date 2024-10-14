@@ -93,7 +93,7 @@ build {
   # Provision the systemd service file
   provisioner "file" {
     source      = "./packer/service/csye6225.service"
-    destination = "/etc/systemd/system/csye6225.service"
+    destination = "/tmp/csye6225.service"
   }
 
   # Use sudo to move the service file to systemd directory and reload systemd daemon
