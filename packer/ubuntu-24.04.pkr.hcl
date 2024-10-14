@@ -1,6 +1,4 @@
 packer {
-  required_version = ">= 1.5.0"
-
   required_plugins {
     amazon = {
       version = ">= 1.0.0"
@@ -9,6 +7,7 @@ packer {
   }
 }
 
+# Define variables
 variable "aws_profile" {
   type = string
 }
@@ -48,7 +47,7 @@ variable "volume_size" {
   type        = number
 }
 
-# AWS Builder configuration to create an AMI
+# Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
   region        = var.aws_region
@@ -57,10 +56,10 @@ source "amazon-ebs" "ubuntu" {
   vpc_id        = var.aws_vpc_id
   subnet_id     = var.aws_subnet_id
 
-  # Use the latest Ubuntu 22.04 LTS AMI
+  # Use the latest Ubuntu 24.04 LTS AMI
   source_ami_filter {
     filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+      name                = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
       root-device-type    = "ebs"
       virtualization-type = "hvm"
     }
@@ -78,21 +77,47 @@ source "amazon-ebs" "ubuntu" {
   }
 }
 
+# Build section with provisioners
 build {
   sources = [
     "source.amazon-ebs.ubuntu"
   ]
 
+  # Check if webapp.zip exists before provisioning
+  provisioner "file" {
+    source      = "./webapp.zip"
+    destination = "/tmp/webapp.zip"
+    only        = ["artifact-exists"]
+  }
+
+  # Provision the systemd service file
+  provisioner "file" {
+    source      = "./packer/service/csye6225.service"
+    destination = "/etc/systemd/system/csye6225.service"
+  }
+
+  # Provision OS updates
   provisioner "shell" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y wget ca-certificates",
-      "wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -",
-      "sudo sh -c 'echo \"deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main\" > /etc/apt/sources.list.d/pgdg.list'",
-      "sudo apt-get update",
-      "sudo apt-get install -y postgresql postgresql-contrib",
-      "sudo systemctl enable postgresql",
-      "sudo systemctl start postgresql"
-    ]
+    script = "./packer/scripts/os_update.sh"
+  }
+
+  # Create user for the application
+  provisioner "shell" {
+    script = "./packer/scripts/user_creation.sh"
+  }
+
+  # Install Node.js
+  provisioner "shell" {
+    script = "./packer/scripts/node_setup.sh"
+  }
+
+  # Install PostgreSQL
+  provisioner "shell" {
+    script = "./packer/scripts/postgres_setup.sh"
+  }
+
+  # Start and set up the web app
+  provisioner "shell" {
+    script = "./packer/scripts/app_setup.sh"
   }
 }
