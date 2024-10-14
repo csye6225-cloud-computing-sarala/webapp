@@ -82,28 +82,28 @@ build {
   sources = [
     "source.amazon-ebs.ubuntu"
   ]
-  
-# Check if webapp.zip exists before provisioning
-provisioner "file" {
-  source      = "./webapp.zip"
-  destination = "/tmp/webapp.zip"
-  only        = ["artifact-exists"]
-}
 
-# Provision the systemd service file
-provisioner "file" {
-  source      = "./packer/service/csye6225.service"
-  destination = "/tmp/csye6225.service"
-}
+  # Check if webapp.zip exists before provisioning
+  provisioner "file" {
+    source      = "./webapp.zip"
+    destination = "/tmp/webapp.zip"
+    only        = ["artifact-exists"]
+  }
 
-# Use sudo to move the service file to systemd directory and reload systemd daemon
-provisioner "shell" {
-  inline = [
-    "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
-    "sudo systemctl daemon-reload",
-    "sudo systemctl enable csye6225.service"
-  ]
-}
+  # Provision the systemd service file
+  provisioner "file" {
+    source      = "./packer/service/csye6225.service"
+    destination = "/tmp/csye6225.service"
+  }
+
+  # Use sudo to move the service file to systemd directory and reload systemd daemon
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable csye6225.service"
+    ]
+  }
 
   # Provision OS updates
   provisioner "shell" {
