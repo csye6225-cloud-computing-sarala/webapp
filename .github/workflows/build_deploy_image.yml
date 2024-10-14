@@ -88,4 +88,13 @@ jobs:
       # Step 10: Run Packer Build
       - name: Run Packer Build
         run: |
-          packer build -var-file=./packer/dev.pkrvars.hcl packer/ubuntu-24.04.pkr.hcl
+          packer build \
+          -var "aws_profile=${{ secrets.AWS_PROFILE }}" \
+          -var "aws_region=${{ secrets.AWS_REGION }}" \
+          -var "aws_instance_type=${{ secrets.AWS_INSTANCE_TYPE }}" \
+          -var "aws_source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
+          -var "aws_ami_name=${{ secrets.AWS_AMI_NAME }}" \
+          -var "aws_vpc_id=${{ secrets.AWS_VPC_ID }}" \
+          -var "aws_subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
+          -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
+          packer/ubuntu-24.04.pkr.hcl
