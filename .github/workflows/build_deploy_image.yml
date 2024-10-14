@@ -27,13 +27,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql postgresql-contrib
+          sudo systemctl start postgresql
 
       # Step 4: Set up PostgreSQL user and database with logs
       - name: Set up PostgreSQL user and database
         run: |
-          sudo -u postgres psql -c "CREATE USER '${{ secrets.TEST_DB_USER }}' WITH PASSWORD '${{ secrets.TEST_DB_PASSWORD }}';" || echo "Failed to create user"
-          sudo -u postgres psql -c "CREATE DATABASE '${{ secrets.TEST_DB_NAME }}' OWNER '${{ secrets.TEST_DB_USER }}';" || echo "Failed to create database"
-          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE '${{ secrets.TEST_DB_NAME }}' TO '${{ secrets.TEST_DB_USER }}';" || echo "Failed to grant privileges"
+          sudo -u postgres psql -c "CREATE USER \"${{ secrets.TEST_DB_USER }}\" WITH PASSWORD '${{ secrets.TEST_DB_PASSWORD }}';" || echo "Failed to create user"
+          sudo -u postgres psql -c "CREATE DATABASE \"${{ secrets.TEST_DB_NAME }}\" OWNER \"${{ secrets.TEST_DB_USER }}\";" || echo "Failed to create database"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE \"${{ secrets.TEST_DB_NAME }}\" TO \"${{ secrets.TEST_DB_USER }}\";" || echo "Failed to grant privileges"
 
       # Step 5: Run integration tests
       - name: Install dependencies and run tests
@@ -41,7 +42,6 @@ jobs:
           npm install
           npm run test
         env:
-          env:
           TEST_DB_HOST: ${{ secrets.TEST_DB_HOST }}
           TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
           TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
