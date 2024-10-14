@@ -31,7 +31,7 @@ jobs:
       # Step 4: Set up PostgreSQL user and database
       - name: Set up PostgreSQL user and database
         run: |
-          sudo -u postgres psql -c "CREATE USER "${{ secrets.TEST_DB_USER }}" WITH PASSWORD "${{ secrets.TEST_DB_PASSWORD }}"";"
+          sudo -u postgres psql -c "CREATE USER "${{ secrets.TEST_DB_USER }}" WITH PASSWORD "${{ secrets.TEST_DB_PASSWORD }}";"
           sudo -u postgres psql -c "CREATE DATABASE "${{ secrets.TEST_DB_NAME }}" OWNER "${{ secrets.TEST_DB_USER }}";"
           sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE "${{ secrets.TEST_DB_NAME }}" TO "${{ secrets.TEST_DB_USER }}";"
 
