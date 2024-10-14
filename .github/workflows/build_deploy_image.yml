@@ -85,6 +85,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # Step 10: Initialize Packer
+      - name: Initialize Packer (Install Plugins)
+        run: |
+          packer init packer/ubuntu-24.04.pkr.hcl
+
       # Step 10: Run Packer Build
       - name: Run Packer Build
         run: |
