@@ -96,6 +96,15 @@ build {
     destination = "/etc/systemd/system/csye6225.service"
   }
 
+  # Use sudo to move the service file to systemd directory and reload systemd daemon
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable csye6225.service"
+    ]
+  }
+
   # Provision OS updates
   provisioner "shell" {
     script = "./packer/scripts/os_update.sh"
