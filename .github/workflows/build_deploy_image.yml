@@ -75,7 +75,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y wget unzip
           wget https://releases.hashicorp.com/packer/1.8.4/packer_1.8.4_linux_amd64.zip
-          unzip packer_1.8.4_linux_amd64.zip -d /usr/local/bin/
+          unzip -o packer_1.8.4_linux_amd64.zip -d /usr/local/bin/
 
       # Step 9: AWS configure
       - name: Configure AWS credentials
