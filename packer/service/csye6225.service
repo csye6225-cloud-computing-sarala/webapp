@@ -1,0 +1,15 @@
+[Unit]
+Description=CSYE6225 Web Application
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node /var/www/webapp/server.js
+Restart=always
+User=csye6225
+Group=csye6225
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/var/www/webapp
+
+[Install]
+WantedBy=multi-user.target
