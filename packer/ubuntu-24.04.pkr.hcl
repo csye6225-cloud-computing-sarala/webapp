@@ -27,11 +27,6 @@ variable "aws_source_ami" {
   type        = string
 }
 
-variable "aws_ami_name" {
-  description = "Name of the AMI to create"
-  type        = string
-}
-
 variable "aws_vpc_id" {
   description = "VPC ID where the build instance will run"
   type        = string
@@ -51,7 +46,7 @@ variable "volume_size" {
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
   region        = var.aws_region
-  ami_name      = var.aws_ami_name
+  ami_name      = "ubuntu-24.04-${formatdate("YYYY-MM-DD-hh-mm-ss", timestamp())}"
   instance_type = var.aws_instance_type
   vpc_id        = var.aws_vpc_id
   subnet_id     = var.aws_subnet_id
