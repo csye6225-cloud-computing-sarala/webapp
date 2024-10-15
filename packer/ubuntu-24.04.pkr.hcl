@@ -83,36 +83,19 @@ build {
     "source.amazon-ebs.ubuntu"
   ]
 
-  # Install 'unzip' and other required tools before using them
-  provisioner "shell" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y unzip"
-    ]
-  }
-
-  # Upload webapp.zip to /tmp directory
+  # Check if webapp.zip exists before provisioning
   provisioner "file" {
     source      = "./webapp.zip"
     destination = "/tmp/webapp.zip"
   }
 
-  # Ensure webapp.zip exists and unzip it
-  provisioner "shell" {
-    inline = [
-      "if [ ! -f /tmp/webapp.zip ]; then echo 'webapp.zip not found!' && exit 1; fi",
-      "sudo unzip /tmp/webapp.zip -d /var/www/webapp",
-      "sudo chown -R www-data:www-data /var/www/webapp"
-    ]
-  }
-
   # Provision the systemd service file
   provisioner "file" {
     source      = "./packer/service/csye6225.service"
-    destination = "/tmp/csye6225.service"
+    destination = "/etc/systemd/system/csye6225.service"
   }
 
-  # Move the service file and reload systemd daemon
+  # Use sudo to move the service file to systemd directory and reload systemd daemon
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
@@ -134,7 +117,7 @@ build {
   # Install Node.js
   provisioner "shell" {
     script = "./packer/scripts/node_setup.sh"
-  }
+  } 
 
   # Install PostgreSQL
   provisioner "shell" {
