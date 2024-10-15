@@ -7,7 +7,45 @@ packer {
   }
 }
 
-# Define variables (as in your original code)
+# Define variables
+variable "aws_profile" {
+  type = string
+}
+
+variable "aws_region" {
+  description = "AWS region where the AMI will be created"
+  type        = string
+}
+
+variable "aws_instance_type" {
+  description = "Instance type to use for building the AMI"
+  type        = string
+}
+
+variable "aws_source_ami" {
+  description = "Source AMI to use for building the custom image"
+  type        = string
+}
+
+variable "aws_ami_name" {
+  description = "Name of the AMI to create"
+  type        = string
+}
+
+variable "aws_vpc_id" {
+  description = "VPC ID where the build instance will run"
+  type        = string
+}
+
+variable "aws_subnet_id" {
+  description = "Subnet ID within the VPC where the build instance will run"
+  type        = string
+}
+
+variable "volume_size" {
+  description = "Size of the root volume in GB"
+  type        = number
+}
 
 # Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
