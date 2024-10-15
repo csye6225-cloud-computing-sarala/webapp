@@ -7,45 +7,7 @@ packer {
   }
 }
 
-# Define variables
-variable "aws_profile" {
-  type = string
-}
-
-variable "aws_region" {
-  description = "AWS region where the AMI will be created"
-  type        = string
-}
-
-variable "aws_instance_type" {
-  description = "Instance type to use for building the AMI"
-  type        = string
-}
-
-variable "aws_source_ami" {
-  description = "Source AMI to use for building the custom image"
-  type        = string
-}
-
-variable "aws_ami_name" {
-  description = "Name of the AMI to create"
-  type        = string
-}
-
-variable "aws_vpc_id" {
-  description = "VPC ID where the build instance will run"
-  type        = string
-}
-
-variable "aws_subnet_id" {
-  description = "Subnet ID within the VPC where the build instance will run"
-  type        = string
-}
-
-variable "volume_size" {
-  description = "Size of the root volume in GB"
-  type        = number
-}
+# Define variables (as in your original code)
 
 # Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
@@ -83,11 +45,27 @@ build {
     "source.amazon-ebs.ubuntu"
   ]
 
-  # Check if webapp.zip exists before provisioning
+  # Install 'unzip' and other required tools before using them
+  provisioner "shell" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y unzip"
+    ]
+  }
+
+  # Upload webapp.zip to /tmp directory
   provisioner "file" {
     source      = "./webapp.zip"
     destination = "/tmp/webapp.zip"
-    only        = ["artifact-exists"]
+  }
+
+  # Ensure webapp.zip exists and unzip it
+  provisioner "shell" {
+    inline = [
+      "if [ ! -f /tmp/webapp.zip ]; then echo 'webapp.zip not found!' && exit 1; fi",
+      "sudo unzip /tmp/webapp.zip -d /var/www/webapp",
+      "sudo chown -R www-data:www-data /var/www/webapp"
+    ]
   }
 
   # Provision the systemd service file
@@ -96,7 +74,7 @@ build {
     destination = "/tmp/csye6225.service"
   }
 
-  # Use sudo to move the service file to systemd directory and reload systemd daemon
+  # Move the service file and reload systemd daemon
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/csye6225.service /etc/systemd/system/csye6225.service",
