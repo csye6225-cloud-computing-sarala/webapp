@@ -26,7 +26,7 @@ describe("User API Endpoints", () => {
   describe("GET /v1/user/self", () => {
     it("should require authentication", async () => {
       const res = await request(app).get("/v1/user/self");
-      expect(res.status).toBe(404); // Expecting Unauthorized status if not authenticated
+      expect(res.status).toBe(401); // Expecting Unauthorized status if not authenticated
     });
 
     it("should return the user data if authenticated", async () => {
