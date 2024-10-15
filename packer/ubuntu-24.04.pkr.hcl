@@ -117,7 +117,7 @@ build {
   # Install Node.js
   provisioner "shell" {
     script = "./packer/scripts/node_setup.sh"
-  } 
+  }
 
   # Install PostgreSQL
   provisioner "shell" {
