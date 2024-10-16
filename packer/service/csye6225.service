@@ -3,7 +3,7 @@ Description=CSYE6225 Web Application
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/node /var/www/webapp/server.js
+ExecStart=/usr/bin/node /var/www/webapp/src/server.js
 Restart=always
 User=csye6225
 Group=csye6225
