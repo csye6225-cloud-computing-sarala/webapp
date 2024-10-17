@@ -22,7 +22,7 @@ jobs:
           node-version: "14"
 
       # Step 3: Build the application (if necessary)
-      - name: Build application and create webapp.zip
+      - name: Run Integration tests and create webapp.zip
         run: |
           npm install
           zip -r webapp.zip .   # Adjust the directory to match your requirements
@@ -33,6 +33,27 @@ jobs:
           sudo apt-get update && sudo apt-get install -y wget unzip
           wget https://releases.hashicorp.com/packer/1.8.4/packer_1.8.4_linux_amd64.zip
           unzip -o packer_1.8.4_linux_amd64.zip -d /usr/local/bin/
+
+      # Step 5: Set up the environment file
+      - name: Setup Environment File
+        run: |
+          mkdir -p ./environment
+          cat << EOF > ./environment/development.env
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB_PORT=${{ secrets.POSTGRES_DB_PORT }}
+          POSTGRES_DB_DIALECT=${{ secrets.POSTGRES_DB_DIALECT }}
+          NODE_APP_PORT=${{ secrets.NODE_APP_PORT }}
+          EOF
+        shell: bash
+
+      - name: Check if environment file exists
+        run: ls -l ./environment/development.env
+
+      - name: Show environment file content
+        run: cat ./environment/development.env
 
       # Step 5: Run packer init to install required plugins
       - name: Initialize Packer
