@@ -42,6 +42,23 @@ variable "volume_size" {
   type        = number
 }
 
+variable "PROD_DB_USER" {
+  type    = string
+  default = "postgres"
+}
+
+variable "PROD_DB_PASSWORD" {
+  type    = string
+  default = "postgres"
+}
+
+variable "PROD_DB_NAME" {
+  type    = string
+  default = "cloud"
+}
+
+
+
 # Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile

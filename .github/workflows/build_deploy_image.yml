@@ -10,6 +10,12 @@ jobs:
     name: Build and Test Web Application & Create Custom AMI
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    env:
+      PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
+      PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
+      PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+      PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+      PROD_DB_PORT: ${{ secrets.PROD_DB_PORT }}
 
     steps:
       # Step 1: Checkout the repository
