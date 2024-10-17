@@ -80,7 +80,7 @@ build {
 
   # Transfer the environment file
   provisioner "file" {
-    source      = "./development.env"
+    source      = "./environment/development.env"
     destination = "/tmp/development.env"
   }
 
