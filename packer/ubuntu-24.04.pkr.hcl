@@ -43,22 +43,22 @@ variable "volume_size" {
 }
 
 variable "PROD_DB_USER" {
-  type    = string
+  type = string
   # default = "postgres"
 }
 
 variable "PROD_DB_PASSWORD" {
-  type    = string
+  type = string
   # default = "postgres"
 }
 
 variable "PROD_DB_NAME" {
-  type    = string
+  type = string
   # default = "cloud_prod"
 }
 
 variable "PROD_DB_PORT" {
-  type    = string
+  type = string
   # default = "5432"
 }
 
