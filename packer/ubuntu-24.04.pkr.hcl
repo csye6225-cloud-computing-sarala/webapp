@@ -87,7 +87,7 @@ build {
   # Copy the environment file to the correct location
   provisioner "shell" {
     inline = [
-      "sudo cp /tmp/development.env /var/www/webapp/.env"
+      "sudo mv /tmp/development.env /var/www/webapp/.env"
     ]
   }
 
