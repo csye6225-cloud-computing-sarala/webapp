@@ -63,6 +63,21 @@ jobs:
         run: |
           zip -r webapp.zip .
 
+      # Step 6: Set up the environment file
+      - name: Setup Environment File
+        run: |
+          mkdir -p ./environment
+          cat << EOF > ./environment/development.env
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB_PORT=${{ secrets.POSTGRES_DB_PORT }}
+          POSTGRES_DB_DIALECT=${{ secrets.POSTGRES_DB_DIALECT }}
+          NODE_APP_PORT=${{ secrets.NODE_APP_PORT }}
+          EOF
+        shell: bash
+
       # Step 7: Upload artifact (optional)
       - name: Upload webapp artifact
         uses: actions/upload-artifact@v3
