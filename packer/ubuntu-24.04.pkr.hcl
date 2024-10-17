@@ -167,7 +167,7 @@ build {
   }
   post-processor "shell-local" {
     inline = [
-      "echo \"Sharing AMI with account ${var.demo_account_id}\"",
+      "echo Sharing AMI with account ${var.demo_account_id}",
       "echo Modifying image permissions for AMI ID {{.BuildID}}",
       "aws ec2 modify-image-attribute --image-id {{.BuildID}} --launch-permission 'Add=[{\"UserId\":\"${var.demo_account_id}\"}]'"
     ]
