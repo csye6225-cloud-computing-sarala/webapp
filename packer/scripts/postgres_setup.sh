@@ -17,24 +17,24 @@ sudo systemctl enable postgresql
 sudo systemctl start postgresql
 
 # Set up PostgreSQL user and database
-if [ -z "${TEST_DB_USER}" ] || [ -z "${TEST_DB_PASSWORD}" ]; then
+if [ -z "${PROD_DB_USER}" ] || [ -z "${PROD_DB_PASSWORD}" ]; then
   echo "DB_USER or DB_PASSWORD environment variable is not set. Exiting."
   exit 1
 fi
 
 # Check if user exists, create or alter user if necessary
-if sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep -q 1; then
+if sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${PROD_DB_USER}';" | grep -q 1; then
   echo "User exists, altering password..."
-  sudo -u postgres psql -c "ALTER USER ${TEST_DB_USER} WITH PASSWORD '${TEST_DB_PASSWORD}';"
+  sudo -u postgres psql -c "ALTER USER ${PROD_DB_USER} WITH PASSWORD '${PROD_DB_PASSWORD}';"
 else
   echo "User does not exist, creating user..."
-  sudo -u postgres psql -c "CREATE USER ${TEST_DB_USER} WITH PASSWORD '${TEST_DB_PASSWORD}';"
+  sudo -u postgres psql -c "CREATE USER ${PROD_DB_USER} WITH PASSWORD '${PROD_DB_PASSWORD}';"
 fi
 
 # Check if database exists, create database if necessary
-if sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${TEST_DB_NAME}';" | grep -q 1; then
-  echo "Database ${TEST_DB_NAME} already exists."
+if sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${PROD_DB_NAME}';" | grep -q 1; then
+  echo "Database ${PROD_DB_NAME} already exists."
 else
-  echo "Creating database ${TEST_DB_NAME}..."
-  sudo -u postgres psql -c "CREATE DATABASE ${TEST_DB_NAME} OWNER ${TEST_DB_USER};"
+  echo "Creating database ${PROD_DB_NAME}..."
+  sudo -u postgres psql -c "CREATE DATABASE ${PROD_DB_NAME} OWNER ${PROD_DB_USER};"
 fi
