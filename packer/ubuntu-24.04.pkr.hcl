@@ -114,11 +114,6 @@ build {
     script = "./packer/scripts/node_setup.sh"
   }
 
-  # Install PostgreSQL
-  provisioner "shell" {
-    script = "./packer/scripts/postgres_setup.sh"
-  }
-
   # Start and set up the web app
   provisioner "shell" {
     script = "./packer/scripts/app_setup.sh"
@@ -135,5 +130,10 @@ build {
     inline = [
       "sudo mv /tmp/development.env /var/www/webapp/.env"
     ]
+  }
+
+  # Install PostgreSQL
+  provisioner "shell" {
+    script = "./packer/scripts/postgres_setup.sh"
   }
 }
