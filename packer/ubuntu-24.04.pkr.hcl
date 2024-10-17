@@ -132,7 +132,7 @@ build {
     ]
   }
 
-   # Install PostgreSQL
+  # Install PostgreSQL
   provisioner "shell" {
     script = "./packer/scripts/postgres_setup.sh"
   }
