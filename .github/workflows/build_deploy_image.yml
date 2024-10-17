@@ -68,13 +68,13 @@ jobs:
         run: |
           mkdir -p ./environment
           cat << EOF > ./environment/development.env
-          POSTGRES_USER=${{ secrets.PROD_DB_USER }}
-          POSTGRES_HOST=${{ secrets.PROD_DB_HOST }}
-          POSTGRES_DB=${{ secrets.PROD_DB_NAME }}
-          POSTGRES_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
-          POSTGRES_DB_PORT=${{ secrets.PROD_DB_PORT }}
-          POSTGRES_DB_DIALECT=${{ secrets.DB_DIALECT }}
-          NODE_APP_PORT=${{ secrets.PORT }}
+          PROD_DB_USER=${{ secrets.PROD_DB_USER }}
+          PROD_DB_HOST=${{ secrets.PROD_DB_HOST }}
+          PROD_DB_NAME=${{ secrets.PROD_DB_NAME }}
+          PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+          PROD_DB_PORT=${{ secrets.PROD_DB_PORT }}
+          DB_DIALECT=${{ secrets.DB_DIALECT }}
+          PORT=${{ secrets.PORT }}
           EOF
         shell: bash
 
