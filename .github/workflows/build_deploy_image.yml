@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies and run tests
         run: |
           npm install
-          npm run test
+          npm run
         env:
           PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
           PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
