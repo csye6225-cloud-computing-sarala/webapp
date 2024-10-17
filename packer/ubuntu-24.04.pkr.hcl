@@ -111,7 +111,7 @@ build {
 
   # Transfer the environment file
   provisioner "file" {
-    source      = "${path.root}/packer/development.env"
+    source      = "/packer/development.env"
     destination = "/tmp/development.env"
   }
 
