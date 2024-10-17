@@ -42,6 +42,19 @@ variable "volume_size" {
   type        = number
 }
 
+variable "PROD_DB_USER" {
+  type = string
+}
+
+variable "PROD_DB_PASSWORD" {
+  type = string
+}
+
+variable "PROD_DB_NAME" {
+  type = string
+}
+
+
 # Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
   profile       = var.aws_profile
