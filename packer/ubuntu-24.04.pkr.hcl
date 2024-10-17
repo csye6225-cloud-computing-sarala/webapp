@@ -135,5 +135,10 @@ build {
   # Install PostgreSQL
   provisioner "shell" {
     script = "./packer/scripts/postgres_setup.sh"
+    environment_vars = {
+    PROD_DB_USER = "{{user `PROD_DB_USER`}}"
+    PROD_DB_PASSWORD = "{{user `PROD_DB_PASSWORD`}}"
+    PROD_DB_NAME = "{{user `PROD_DB_NAME`}}"
+  }
   }
 }
