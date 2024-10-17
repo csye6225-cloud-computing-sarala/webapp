@@ -59,6 +59,10 @@ variable "prod_db_port" {
   # default = "5432"
 }
 
+variable "demo_account_id" {
+  description = "AWS Account ID for the demo account where the AMI should be shared."
+  type        = string
+}
 
 
 # Define the source for AWS Amazon AMI
@@ -160,5 +164,12 @@ build {
       "DB_NAME=${var.prod_db_name}",
       "DB_PORT=${var.prod_db_port}"
     ]
+  }
+  post-processors {
+    post-processor "shell-local" {
+      inline = [
+        "aws ec2 modify-image-attribute --image-id {{ .BuildID }} --launch-permission \"Add=[{\\\"UserId\\\":\\\"${var.demo_account_id}\\\"}]\" --region ${var.aws_region}"
+      ]
+    }
   }
 }
