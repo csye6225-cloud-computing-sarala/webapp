@@ -46,7 +46,21 @@ jobs:
           fi
           sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${{ secrets.TEST_DB_NAME }}';" | grep -q 1 || sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.TEST_DB_NAME }} OWNER ${{ secrets.TEST_DB_USER }};"
 
-      # Step 5: Run integration tests
+        # Step 5: Set up the environment file
+      - name: Setup Environment File
+        run: |
+          cat << EOF > .env
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB_PORT=${{ secrets.POSTGRES_DB_PORT }}
+          POSTGRES_DB_DIALECT=${{ secrets.POSTGRES_DB_DIALECT }}
+          NODE_APP_PORT=${{ secrets.NODE_APP_PORT }}
+          EOF
+        shell: bash
+
+      # Step 6: Run integration tests
       - name: Install dependencies and run tests
         run: |
           npm install
@@ -58,26 +72,26 @@ jobs:
           TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
           TEST_DB_PORT: ${{ secrets.TEST_DB_PORT }}
 
-      # Step 6: Zip the entire repository
+      # Step 7: Zip the entire repository
       - name: Zip application code
         run: |
           zip -r webapp.zip .
 
-      # Step 7: Upload artifact (optional)
+      # Step 8: Upload artifact (optional)
       - name: Upload webapp artifact
         uses: actions/upload-artifact@v3
         with:
           name: webapp.zip
           path: webapp.zip
 
-      # Step 8: Install Packer
+      # Step 9: Install Packer
       - name: Install Packer
         run: |
           sudo apt-get update && sudo apt-get install -y wget unzip
           wget https://releases.hashicorp.com/packer/1.8.4/packer_1.8.4_linux_amd64.zip
           unzip -o packer_1.8.4_linux_amd64.zip -d /usr/local/bin/
 
-      # Step 9: AWS configure
+      # Step 10: AWS configure
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -85,12 +99,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 10: Initialize Packer
+      # Step 11: Initialize Packer
       - name: Initialize Packer (Install Plugins)
         run: |
           packer init packer/ubuntu-24.04.pkr.hcl
 
-      # Step 10: Run Packer Build
+      # Step 12: Run Packer Build
       - name: Run Packer Build
         run: |
           packer build \

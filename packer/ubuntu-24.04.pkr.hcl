@@ -109,6 +109,19 @@ build {
     script = "./packer/scripts/user_creation.sh"
   }
 
+  # Transfer the environment file
+  provisioner "file" {
+    source      = "./.env"
+    destination = "/tmp/.env"
+  }
+
+  # Copy the environment file to the correct location
+  provisioner "shell" {
+    inline = [
+      "sudo cp /tmp/development.env /var/www/webapp/.env"
+    ]
+  }
+
   # Install Node.js
   provisioner "shell" {
     script = "./packer/scripts/node_setup.sh"
