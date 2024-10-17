@@ -68,26 +68,15 @@ jobs:
 
       # Step 7: Run packer validate to validate the template using GitHub secrets
       - name: Validate Packer template
-        env:
-          PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
-          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
-          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
-          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
-          PROD_DB_PORT: ${{ secrets.PROD_DB_PORT }}
-          DB_DIALECT: ${{ secrets.DB_DIALECT }}
-          PORT: ${{ secrets.PORT }}
-          AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
-          AWS_SOURCE_AMI: ${{ secrets.AWS_SOURCE_AMI }}
-          AWS_VPC_ID: ${{ secrets.AWS_VPC_ID }}
-          AWS_SUBNET_ID: ${{ secrets.AWS_SUBNET_ID }}
-          VOLUME_SIZE: ${{ secrets.VOLUME_SIZE }}
         run: |
-          packer validate -var "aws_profile=$AWS_PROFILE" \
-                          -var "aws_region=$AWS_REGION" \
-                          -var "aws_instance_type=$AWS_INSTANCE_TYPE" \
-                          -var "aws_source_ami=$AWS_SOURCE_AMI" \
-                          -var "aws_vpc_id=$AWS_VPC_ID" \
-                          -var "aws_subnet_id=$AWS_SUBNET_ID" \
-                          -var "volume_size=$VOLUME_SIZE" ./packer/ubuntu-24.04.pkr.hcl
+          packer validate -var "prod_db_user=${{ secrets.PROD_DB_USER }}" \
+                     -var "prod_db_password=${{ secrets.PROD_DB_PASSWORD }}" \
+                     -var "prod_db_name=${{ secrets.PROD_DB_NAME }}" \
+                     -var "prod_db_port=${{ secrets.PROD_DB_PORT }}" \
+                     -var "aws_profile=${{ secrets.AWS_PROFILE }}" \
+                     -var "aws_region=${{ secrets.AWS_REGION }}" \
+                     -var "aws_instance_type=${{ secrets.AWS_INSTANCE_TYPE }}" \
+                     -var "aws_source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
+                     -var "aws_vpc_id=${{ secrets.AWS_VPC_ID }}" \
+                     -var "aws_subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
+                     -var "volume_size=${{ secrets.VOLUME_SIZE }}" ./packer/ubuntu-24.04.pkr.hcl

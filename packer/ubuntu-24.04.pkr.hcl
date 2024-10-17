@@ -42,22 +42,19 @@ variable "volume_size" {
   type        = number
 }
 
-variable "PROD_DB_USER" {
+variable "prod_db_user" {
   type = string
-  # default = "postgres"
 }
 
-variable "PROD_DB_PASSWORD" {
+variable "prod_db_password" {
   type = string
-  # default = "postgres"
 }
 
-variable "PROD_DB_NAME" {
+variable "prod_db_name" {
   type = string
-  # default = "cloud_prod"
 }
 
-variable "PROD_DB_PORT" {
+variable "prod_db_port" {
   type = string
   # default = "5432"
 }
@@ -158,10 +155,10 @@ build {
   provisioner "shell" {
     script = "./packer/scripts/postgres_setup.sh"
     environment_vars = [
-      "PROD_DB_USER=${var.PROD_DB_USER}",
-      "PROD_DB_PASSWORD=${var.PROD_DB_PASSWORD}",
-      "PROD_DB_NAME=${var.PROD_DB_NAME}",
-      "PROD_DB_PORT=${var.PROD_DB_PORT}"
+      "DB_USER=${var.prod_db_user}",
+      "DB_PASSWORD=${var.prod_db_password}",
+      "DB_NAME=${var.prod_db_name}",
+      "DB_PORT=${var.prod_db_port}"
     ]
   }
 }

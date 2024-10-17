@@ -121,10 +121,10 @@ jobs:
       - name: Run Packer Build
         run: |
           packer build \
-          -var "PROD_DB_USER=${{ secrets.PROD_DB_USER }}" \
-          -var "PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" \
-          -var "PROD_DB_NAME=${{ secrets.PROD_DB_NAME }}" \
-          -var "PROD_DB_PORT=${{ secrets.PROD_DB_PORT }}" \
+          -var "prod_db_user=${{ secrets.PROD_DB_USER }}" \
+          -var "prod_db_password=${{ secrets.PROD_DB_PASSWORD }}" \
+          -var "prod_db_name=${{ secrets.PROD_DB_NAME }}" \
+          -var "prod_db_port=${{ secrets.PROD_DB_PORT }}" \
           -var "aws_profile=${{ secrets.AWS_PROFILE }}" \
           -var "aws_region=${{ secrets.AWS_REGION }}" \
           -var "aws_instance_type=${{ secrets.AWS_INSTANCE_TYPE }}" \
