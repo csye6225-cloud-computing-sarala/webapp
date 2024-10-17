@@ -60,6 +60,12 @@ jobs:
           EOF
         shell: bash
 
+      - name: Check if environment file exists
+        run: ls -l ./packer/development.env
+
+      - name: Show environment file content
+        run: cat ./packer/development.env
+
       # Step 6: Run integration tests
       - name: Install dependencies and run tests
         run: |
