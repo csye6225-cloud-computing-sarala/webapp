@@ -165,11 +165,11 @@ build {
       "DB_PORT=${var.prod_db_port}"
     ]
   }
-  post-processors {
-    post-processor "shell-local" {
-      inline = [
-        "aws ec2 modify-image-attribute --image-id {{ .BuildID }} --launch-permission \"Add=[{\\\"UserId\\\":\\\"${var.demo_account_id}\\\"}]\" --region ${var.aws_region}"
-      ]
-    }
+  post-processor "shell-local" {
+    inline = [
+      "echo \"Sharing AMI with account ${var.demo_account_id}\"",
+      "echo Modifying image permissions for AMI ID {{.BuildID}}",
+      "aws ec2 modify-image-attribute --image-id {{.BuildID}} --launch-permission 'Add=[{\"UserId\":\"${var.demo_account_id}\"}]'"
+    ]
   }
 }
