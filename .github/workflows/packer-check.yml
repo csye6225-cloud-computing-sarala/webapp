@@ -39,13 +39,13 @@ jobs:
         run: |
           mkdir -p ./environment
           cat << EOF > ./environment/development.env
-          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
-          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB_PORT=${{ secrets.POSTGRES_DB_PORT }}
-          POSTGRES_DB_DIALECT=${{ secrets.POSTGRES_DB_DIALECT }}
-          NODE_APP_PORT=${{ secrets.NODE_APP_PORT }}
+          PROD_DB_USER=${{ secrets.PROD_DB_USER }}
+          PROD_DB_HOST=${{ secrets.PROD_DB_HOST }}
+          PROD_DB_NAME=${{ secrets.PROD_DB_NAME }}
+          PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+          PROD_DB_PORT=${{ secrets.PROD_DB_PORT }}
+          DB_DIALECT=${{ secrets.DB_DIALECT }}
+          PORT=${{ secrets.PORT }}
           EOF
         shell: bash
 
@@ -69,6 +69,13 @@ jobs:
       # Step 7: Run packer validate to validate the template using GitHub secrets
       - name: Validate Packer template
         env:
+          PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
+          PROD_DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          PROD_DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_DIALECT: ${{ secrets.DB_DIALECT }}
+          PORT: ${{ secrets.PORT }}
           AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_INSTANCE_TYPE: ${{ secrets.AWS_INSTANCE_TYPE }}
