@@ -17,7 +17,7 @@ sudo systemctl enable postgresql
 sudo systemctl start postgresql
 
 # Set up PostgreSQL user and database
-if [ -z "${PROD_DB_USER}" ] || [ -z "${PROD_DB_PASSWORD}" ]; then
+if [ -z "$PROD_DB_USER" ] || [ -z "$PROD_DB_PASSWORD" ]; then
   echo "DB_USER or DB_PASSWORD environment variable is not set. Exiting."
   exit 1
 fi
