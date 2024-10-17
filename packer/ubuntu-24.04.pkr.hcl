@@ -111,8 +111,8 @@ build {
 
   # Transfer the environment file
   provisioner "file" {
-    source      = "./.env"
-    destination = "/tmp/.env"
+    source      = "./development.env"
+    destination = "/tmp/development.env"
   }
 
   # Copy the environment file to the correct location
