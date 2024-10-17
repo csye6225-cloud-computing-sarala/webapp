@@ -78,19 +78,6 @@ build {
     "source.amazon-ebs.ubuntu"
   ]
 
-  # Transfer the environment file
-  provisioner "file" {
-    source      = "./environment/development.env"
-    destination = "/tmp/development.env"
-  }
-
-  # Copy the environment file to the correct location
-  provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/development.env /var/www/webapp/.env"
-    ]
-  }
-
   # Check if webapp.zip exists before provisioning
   provisioner "file" {
     source      = "./webapp.zip"
@@ -135,5 +122,18 @@ build {
   # Start and set up the web app
   provisioner "shell" {
     script = "./packer/scripts/app_setup.sh"
+  }
+
+  # Transfer the environment file
+  provisioner "file" {
+    source      = "./environment/development.env"
+    destination = "/tmp/development.env"
+  }
+
+  # Copy the environment file to the correct location
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/development.env /var/www/webapp/.env"
+    ]
   }
 }
