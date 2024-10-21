@@ -134,4 +134,5 @@ jobs:
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demouser=${{ secrets.DEMO_USER }}" \
           -var "aws_devuser=${{ secrets.DEV_USER }}" \
+          -var "demo_account_id=${{ secrets.DEMO_ACCOUNT_ID }}"
           packer/ubuntu-24.04.pkr.hcl
