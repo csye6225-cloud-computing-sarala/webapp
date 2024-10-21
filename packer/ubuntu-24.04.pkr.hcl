@@ -64,6 +64,15 @@ variable "demo_account_id" {
   type        = string
 }
 
+variable "aws_demouser" {
+  description = "AWS Account ID for the demo account where the AMI should be shared."
+  typr = string
+}
+
+variable "aws_devuser" {
+  description = "AWS Account ID for the dev account where the AMI should will be created."
+  typr = string
+}
 
 # Define the source for AWS Amazon AMI
 source "amazon-ebs" "ubuntu" {
@@ -73,6 +82,7 @@ source "amazon-ebs" "ubuntu" {
   instance_type = var.aws_instance_type
   vpc_id        = var.aws_vpc_id
   subnet_id     = var.aws_subnet_id
+  ami_users     = [var.aws_devuser, var.aws_demouser]
 
   # Use the latest Ubuntu 24.04 LTS AMI
   source_ami_filter {
@@ -163,13 +173,6 @@ build {
       "DB_PASSWORD=${var.prod_db_password}",
       "DB_NAME=${var.prod_db_name}",
       "DB_PORT=${var.prod_db_port}"
-    ]
-  }
-  post-processor "shell-local" {
-    inline = [
-      "echo Sharing AMI with account ${var.demo_account_id}",
-      "echo Modifying image permissions for AMI ID {{.BuildID}}",
-      "aws ec2 modify-image-attribute --image-id {{.BuildID}} --launch-permission 'Add=[{\"UserId\":\"${var.demo_account_id}\"}]'"
     ]
   }
 }
