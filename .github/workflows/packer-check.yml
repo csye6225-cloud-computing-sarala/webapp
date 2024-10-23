@@ -80,4 +80,5 @@ jobs:
                      -var "aws_vpc_id=${{ secrets.AWS_VPC_ID }}" \
                      -var "aws_subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
                      -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
-                     -var "demo_account_id=${{ secrets.DEMO_ACCOUNT_ID }}" \./packer/ubuntu-24.04.pkr.hcl
+                     -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
+                     -var "aws_dev_user=${{ secrets.DEV_USER }}" \./packer/ubuntu-24.04.pkr.hcl
