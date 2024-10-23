@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use(healthzRoutes);
 
-app.use("/v1", userRoutes);
+app.use("/v2", userRoutes);
 
 sequelize
   .sync()
