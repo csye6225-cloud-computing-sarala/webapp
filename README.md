@@ -120,24 +120,3 @@ npm start
 Author
 Sarala Sharanappa Kanakagiri
 `````
-
-*Test Runs*
-Test Run 1
-Test Run 2
-Test Run 3
-Test Run 4
-Test Run 5
-Test Run 6
-Test Run 7
-Test Run 8 -1
-Test Run 9
-Test Run 10
-Test Run 11
-Test Run 12
-Test Run 13
-Test Run 14
-Test Run 15
-Test Run 16
-Test Run 17
-Test Run 18
-Test Run 19
