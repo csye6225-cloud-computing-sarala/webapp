@@ -21,7 +21,7 @@ export const createUser = async (userData) => {
   });
   // Exclude the password field from the response
   const { password: _, ...userWithoutPassword } = user.get({ plain: true });
-  return user.get({ plain: true });
+  return userWithoutPassword;
 };
 
 // Update user details
