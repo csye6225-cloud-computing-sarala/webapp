@@ -19,6 +19,8 @@ export const createUser = async (userData) => {
     email,
     password: hashedPassword,
   });
+  // Exclude the password field from the response
+  const { password: _, ...userWithoutPassword } = user.get({ plain: true });
   return user.get({ plain: true });
 };
 
