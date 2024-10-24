@@ -160,15 +160,4 @@ build {
       "sudo mv /tmp/development.env /var/www/webapp/.env"
     ]
   }
-
-  # Install PostgreSQL
-  provisioner "shell" {
-    script = "./packer/scripts/postgres_setup.sh"
-    environment_vars = [
-      "DB_USER=${var.prod_db_user}",
-      "DB_PASSWORD=${var.prod_db_password}",
-      "DB_NAME=${var.prod_db_name}",
-      "DB_PORT=${var.prod_db_port}"
-    ]
-  }
 }
