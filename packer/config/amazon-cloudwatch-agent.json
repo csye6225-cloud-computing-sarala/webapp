@@ -1,0 +1,44 @@
+{
+    "agent": {
+      "metrics_collection_interval": 60,
+      "run_as_user": "root"
+    },
+    "logs": {
+      "logs_collected": {
+        "files": {
+          "collect_list": [
+            {
+              "file_path": "/var/log/syslog",
+              "log_group_name": "syslog",
+              "log_stream_name": "{instance_id}",
+              "timestamp_format": "%b %d %H:%M:%S",
+              "timezone": "LOCAL"
+            },
+            {
+              "file_path": "/var/www/webapp/logs/app.log",
+              "log_group_name": "webapp-log-group",
+              "log_stream_name": "{instance_id}",
+              "timestamp_format": "%Y-%m-%d %H:%M:%S",
+              "timezone": "LOCAL"
+            }
+          ]
+        }
+      }
+    },
+    "metrics": {
+      "metrics_collected": {
+        "statsd": {
+          "service_address": ":8125",
+          "metrics_collection_interval": 60
+        },
+        "collectd": {
+          "metrics_aggregation_interval": 60,
+          "metrics_collection_interval": 60,
+          "collectd_security_level": "none",
+          "collectd_auth_file": "/opt/aws/amazon-cloudwatch-agent/etc/collectd_auth",
+          "collectd_typesdb_path": "/opt/aws/amazon-cloudwatch-agent/etc/collectd_types.db"
+        }
+      }
+    }
+  }
+  
