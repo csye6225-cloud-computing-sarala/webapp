@@ -108,30 +108,31 @@ build {
   ]
 
   # Install the Unified CloudWatch Agent
-  provisioner "shell" {
-    inline = [
-      "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
-      "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
-      "rm amazon-cloudwatch-agent.deb"
-    ]
-  }
+provisioner "shell" {
+  inline = [
+    "wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb",
+    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
+    "rm amazon-cloudwatch-agent.deb"
+  ]
+}
 
-  # Copy CloudWatch Agent configuration file
-  provisioner "file" {
-    source      = "./packer/config/amazon-cloudwatch-agent.json"
-    destination = "/tmp/amazon-cloudwatch-agent.json"
-  }
+# Copy CloudWatch Agent configuration file
+provisioner "file" {
+  source      = "./packer/config/amazon-cloudwatch-agent.json"
+  destination = "/tmp/amazon-cloudwatch-agent.json"
+}
 
-  # Configure CloudWatch Agent to start on boot
-  provisioner "shell" {
-    inline = [
-      "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
-      "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
-      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
-      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
-      "sudo systemctl enable amazon-cloudwatch-agent"
-    ]
-  }
+# Configure CloudWatch Agent to start on boot
+provisioner "shell" {
+  inline = [
+    "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc",
+    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a stop",
+    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+    "sudo systemctl enable amazon-cloudwatch-agent"
+  ]
+}
+
 
   # Check if webapp.zip exists before provisioning
   provisioner "file" {
