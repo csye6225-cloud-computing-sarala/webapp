@@ -30,13 +30,8 @@
         "statsd": {
           "service_address": ":8125",
           "metrics_collection_interval": 60
-        },
-        "collectd": {
-          "metrics_aggregation_interval": 60,
-          "collectd_security_level": "none",
-          "collectd_auth_file": "/opt/aws/amazon-cloudwatch-agent/etc/collectd_auth",
-          "collectd_typesdb": ["/opt/aws/amazon-cloudwatch-agent/etc/collectd_types.db"]
         }
       }
     }
-  }  
+  }
+  
