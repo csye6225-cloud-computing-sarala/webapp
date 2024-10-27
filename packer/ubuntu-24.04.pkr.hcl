@@ -118,8 +118,8 @@ build {
 
   # Copy CloudWatch Agent configuration file
   provisioner "file" {
-    source      = "./packer/config/amazon-cloudwatch-agent.json"
-    destination = "/tmp/amazon-cloudwatch-agent.json"
+    source      = "./packer/config/aws-cloudwatch-agent.json"
+    destination = "/tmp/aws-cloudwatch-agent.json"
   }
 
   # Configure CloudWatch Agent to start on boot
