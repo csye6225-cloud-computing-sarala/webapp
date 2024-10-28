@@ -1,5 +1,5 @@
 import "dotenv/config";
-import app from "./app.js";
+import { app } from "./app.js";
 import sequelize from "./config/database.js";
 
 //default port is 3000
