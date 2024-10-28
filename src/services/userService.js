@@ -1,11 +1,16 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import { statsdClient } from "../app.js";
 
 // Fetch user data excluding the password
 export const getUserData = async (userId) => {
+  const start = process.hrtime();
   const user = await User.findByPk(userId, {
     attributes: { exclude: ["password"] },
   });
+  const diff = process.hrtime(start);
+  const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+  statsdClient.timing("database.query.getUserData.duration", durationMs);
   return user ? user.get({ plain: true }) : null;
 };
 
@@ -19,14 +24,21 @@ export const createUser = async (userData) => {
     email,
     password: hashedPassword,
   });
-  // Exclude the password field from the response
+  const diff = process.hrtime(start);
+  const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+  statsdClient.timing("database.query.createUser.duration", durationMs);
   const { password: _, ...userWithoutPassword } = user.get({ plain: true });
   return userWithoutPassword;
 };
 
 // Update user details
 export const updateUserDetails = async (userId, updates) => {
+  const start = process.hrtime();
   const user = await User.findByPk(userId);
+  const diff = process.hrtime(start);
+  const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+  statsdClient.timing("database.query.findByPk.duration", durationMs);
+
   const { first_name, last_name, password } = updates;
 
   // Check for unsupported fields

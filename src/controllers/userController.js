@@ -3,10 +3,16 @@ import {
   createUser,
   updateUserDetails,
 } from "../services/userService.js";
+import { statsdClient } from "../app.js";
 
 export const getUserController = async (req, res) => {
   try {
+    const start = process.hrtime();
     const userData = await getUserData(req.user.id);
+    const diff = process.hrtime(start);
+    const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+    statsdClient.timing("api.user.get.duration", durationMs);
+
     if (!userData) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -19,7 +25,12 @@ export const getUserController = async (req, res) => {
 
 export const createUserController = async (req, res) => {
   try {
+    const start = process.hrtime();
     const userData = await createUser(req.body);
+    const diff = process.hrtime(start);
+    const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+    statsdClient.timing("api.user.create.duration", durationMs);
+
     res.status(200).json(userData);
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") {
