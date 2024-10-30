@@ -1,77 +1,134 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { statsdClient } from "../app.js";
+import { trackDatabaseQuery } from "../utils/monitoringUtils.js";
 
-// Fetch user data excluding the password
+/**
+ * @desc Fetch user data excluding the password field
+ * @param {string} userId - The ID of the user
+ * @returns {object|null} User data or null if not found
+ */
 export const getUserData = async (userId) => {
-  const start = process.hrtime();
-  const user = await User.findByPk(userId, {
-    attributes: { exclude: ["password"] },
-  });
-  const diff = process.hrtime(start);
-  const durationMs = diff[0] * 1000 + diff[1] / 1e6;
-  statsdClient.timing("database.query.getUserData.duration", durationMs);
-  return user ? user.get({ plain: true }) : null;
+  logger.info(`Fetching user data for user ID: ${userId}`);
+
+  try {
+    const user = await trackDatabaseQuery("getUserData", async () =>
+      User.findByPk(userId, { attributes: { exclude: ["password"] } })
+    );
+
+    if (user) {
+      logger.info(`User data retrieved successfully for user ID: ${userId}`);
+      return user.get({ plain: true });
+    } else {
+      logger.warn(`User not found for user ID: ${userId}`);
+      return null;
+    }
+  } catch (error) {
+    logger.error(
+      `Error fetching user data for user ID ${userId}: ${error.message}`
+    );
+    throw error;
+  }
 };
 
-// Create a new user
+/**
+ * @desc Create a new user with hashed password
+ * @param {object} userData - User data including first_name, last_name, email, and password
+ * @returns {object} Created user data excluding the password
+ */
 export const createUser = async (userData) => {
-  const { first_name, last_name, email, password } = userData;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await User.create({
-    first_name,
-    last_name,
-    email,
-    password: hashedPassword,
-  });
-  const diff = process.hrtime(start);
-  const durationMs = diff[0] * 1000 + diff[1] / 1e6;
-  statsdClient.timing("database.query.createUser.duration", durationMs);
-  const { password: _, ...userWithoutPassword } = user.get({ plain: true });
-  return userWithoutPassword;
+  logger.info(`Creating a new user with email: ${userData.email}`);
+
+  try {
+    const { first_name, last_name, email, password } = userData;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await trackDatabaseQuery("createUser", async () =>
+      User.create({
+        first_name,
+        last_name,
+        email,
+        password: hashedPassword,
+      })
+    );
+
+    logger.info(`User created successfully with email: ${email}`);
+    const { password: _, ...userWithoutPassword } = user.get({ plain: true });
+    return userWithoutPassword;
+  } catch (error) {
+    logger.error(
+      `Error creating user with email ${userData.email}: ${error.message}`
+    );
+    throw error;
+  }
 };
 
-// Update user details
+/**
+ * @desc Update user details if changes are detected
+ * @param {string} userId - The ID of the user
+ * @param {object} updates - Fields to update (first_name, last_name, password)
+ * @returns {object|null} Updated user data or null if no changes were detected
+ */
 export const updateUserDetails = async (userId, updates) => {
-  const start = process.hrtime();
-  const user = await User.findByPk(userId);
-  const diff = process.hrtime(start);
-  const durationMs = diff[0] * 1000 + diff[1] / 1e6;
-  statsdClient.timing("database.query.findByPk.duration", durationMs);
+  logger.info(`Updating user details for user ID: ${userId}`);
 
-  const { first_name, last_name, password } = updates;
+  try {
+    const user = await trackDatabaseQuery("findByPk", async () =>
+      User.findByPk(userId)
+    );
 
-  // Check for unsupported fields
-  const allowedFields = ["first_name", "last_name", "password"];
-  const invalidFields = Object.keys(updates).filter(
-    (key) => !allowedFields.includes(key)
-  );
-  if (invalidFields.length > 0) {
-    const message = `Invalid fields: ${invalidFields.join(", ")}`;
-    throw new Error(message); // You can catch and handle this error in the controller
-  }
+    if (!user) {
+      logger.warn(`User not found for user ID: ${userId}`);
+      return null;
+    }
 
-  // Check if any changes were made to first_name, last_name, or password
-  const isSameData =
-    (!first_name || first_name === user.first_name) &&
-    (!last_name || last_name === user.last_name) &&
-    (!password || (await bcrypt.compare(password, user.password)));
+    const { first_name, last_name, password } = updates;
 
-  // If no changes were detected, return null to indicate no changes
-  if (isSameData) {
-    return null;
-  }
+    // Check for unsupported fields
+    const allowedFields = ["first_name", "last_name", "password"];
+    const invalidFields = Object.keys(updates).filter(
+      (key) => !allowedFields.includes(key)
+    );
+    if (invalidFields.length > 0) {
+      const message = `Invalid fields: ${invalidFields.join(", ")}`;
+      logger.warn(message);
+      throw new Error(message); // You can catch and handle this error in the controller
+    }
 
-  // Update only if there are changes
-  if (first_name && first_name !== user.first_name) {
-    user.first_name = first_name;
+    // Check if any changes were made
+    const isSameData =
+      (!first_name || first_name === user.first_name) &&
+      (!last_name || last_name === user.last_name) &&
+      (!password || (await bcrypt.compare(password, user.password)));
+
+    if (isSameData) {
+      logger.info(`No changes detected for user ID: ${userId}`);
+      return null;
+    }
+
+    // Update only if there are changes
+    if (first_name && first_name !== user.first_name) {
+      user.first_name = first_name;
+    }
+    if (last_name && last_name !== user.last_name) {
+      user.last_name = last_name;
+    }
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await trackDatabaseQuery("saveUser", async () =>
+      user.save()
+    );
+    const userWithoutPassword = updatedUser.get({ plain: true });
+    delete userWithoutPassword.password;
+
+    logger.info(`User details updated successfully for user ID: ${userId}`);
+    return updatedUser;
+  } catch (error) {
+    logger.error(
+      `Error updating user details for user ID ${userId}: ${error.message}`
+    );
+    throw error;
   }
-  if (last_name && last_name !== user.last_name) {
-    user.last_name = last_name;
-  }
-  if (password) {
-    user.password = await bcrypt.hash(password, 10);
-  }
-  await user.save();
-  return user.get({ plain: true, attributes: { exclude: ["password"] } });
 };

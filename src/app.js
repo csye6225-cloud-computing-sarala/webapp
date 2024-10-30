@@ -3,6 +3,8 @@ import sequelize from "./config/database.js";
 import healthzRoutes from "./routes/healthz.js";
 import userRoutes from "./routes/userRoutes.js";
 import StatsD from "node-statsd";
+import profilePicRoutes from "./routes/profilePicRoutes.js";
+import apiMetricsMiddleware from "./middleware/apiMetricsMiddleware.js";
 
 const app = express();
 app.use(express.json());
@@ -12,6 +14,9 @@ const statsdClient = new StatsD({
   host: "localhost",
   port: 8125,
 });
+
+// Use the API metrics middleware for all routes
+app.use(apiMetricsMiddleware);
 
 // Middleware to measure API call count and response time
 app.use((req, res, next) => {
@@ -35,6 +40,8 @@ app.use((req, res, next) => {
 app.use(healthzRoutes);
 
 app.use("/v1", userRoutes);
+
+app.use("/v1", profilePicRoutes);
 
 sequelize
   .sync()

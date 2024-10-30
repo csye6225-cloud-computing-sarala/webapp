@@ -5,6 +5,7 @@ import {
   createUserController,
   updateUserController,
 } from "../controllers/userController.js";
+import logger from "../utils/logger.js";
 
 const userRoutes = express.Router();
 
@@ -27,6 +28,7 @@ const hasDisallowedHeaders = (req, res, next) => {
     (header) => !allowedHeaders.includes(header.toLowerCase())
   );
   if (disallowedHeader) {
+    logger.warn(`Disallowed header: ${disallowedHeader}`);
     return res
       .status(400)
       .json({ message: `Disallowed header: ${disallowedHeader}` });
@@ -36,8 +38,12 @@ const hasDisallowedHeaders = (req, res, next) => {
 
 // Middleware to reject unwanted HTTP methods on specific endpoints
 userRoutes.use("/user/self", basicAuth, (req, res, next) => {
-  if (["DELETE", "PATCH", "OPTIONS", "HEAD"].includes(req.method)) {
-    return res.status(405).end();
+  if (
+    ["DELETE", "PATCH", "OPTIONS", "HEAD"].includes(req.method) &&
+    req.path === "/user/self"
+  ) {
+    logger.info(`Method ${req.method} not allowed on /user/self`);
+    return res.status(405).json({ message: "Method Not Allowed" });
   }
   next();
 });
@@ -45,6 +51,7 @@ userRoutes.use("/user/self", basicAuth, (req, res, next) => {
 // Middleware to reject query parameters on POST requests
 const noQueryParams = (req, res, next) => {
   if (Object.keys(req.query).length > 0) {
+    logger.warn("Query parameters are not allowed in POST requests");
     return res
       .status(400)
       .json({ message: "Query parameters are not allowed in POST requests" });
@@ -58,26 +65,28 @@ const noCache = (req, res, next) => {
   next();
 };
 
-// Middleware to reject body parameters (for GET or DELETE requests that shouldn't have a body)
+// Middleware to reject body parameters (for GET or DELETE requests)
 const noBodyParams = (req, res, next) => {
-  if (req.method === "GET" || req.method === "DELETE") {
-    if (Object.keys(req.body).length > 0) {
-      return res
-        .status(400)
-        .json({ message: "Body parameters are not allowed" });
-    }
+  if (
+    ["GET", "DELETE"].includes(req.method) &&
+    Object.keys(req.body).length > 0
+  ) {
+    logger.warn("Body parameters are not allowed for GET or DELETE requests");
+    return res.status(400).json({ message: "Body parameters are not allowed" });
   }
   next();
 };
 
 // Middleware to enforce Content-Type for POST/PUT requests
 const checkContentType = (req, res, next) => {
-  if (["POST", "PUT"].includes(req.method)) {
-    if (req.headers["content-type"] !== "application/json") {
-      return res
-        .status(400)
-        .json({ message: "Content-Type must be application/json" });
-    }
+  if (
+    ["POST", "PUT"].includes(req.method) &&
+    req.headers["content-type"] !== "application/json"
+  ) {
+    logger.warn("Content-Type must be application/json for POST/PUT requests");
+    return res
+      .status(400)
+      .json({ message: "Content-Type must be application/json" });
   }
   next();
 };
@@ -88,14 +97,16 @@ const rejectEmptyBody = (req, res, next) => {
     ["POST", "PUT"].includes(req.method) &&
     Object.keys(req.body).length === 0
   ) {
+    logger.warn("Request body cannot be empty for POST/PUT requests");
     return res.status(400).json({ message: "Request body cannot be empty" });
   }
   next();
 };
 
-// Middleware to enforce Authorization header for authenticated routes
+// Middleware to enforce Authorization header
 const checkAuthorizationHeader = (req, res, next) => {
   if (!req.headers.authorization) {
+    logger.warn("Authorization header is required");
     return res
       .status(401)
       .json({ message: "Authorization header is required" });
@@ -103,6 +114,7 @@ const checkAuthorizationHeader = (req, res, next) => {
   next();
 };
 
+// Route definitions
 userRoutes.get(
   "/user/self",
   basicAuth,
@@ -112,6 +124,7 @@ userRoutes.get(
   noBodyParams,
   getUserController
 );
+
 userRoutes.post(
   "/user",
   noCache,
@@ -121,6 +134,7 @@ userRoutes.post(
   rejectEmptyBody,
   createUserController
 );
+
 userRoutes.put(
   "/user/self",
   basicAuth,
