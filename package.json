@@ -9,6 +9,7 @@
     "dev": "cross-env NODE_ENV=development nodemon -r dotenv/config src/server.js"
   },
   "jest": {
+    "globalTeardown": "./jest.teardown.js",
     "testEnvironment": "node"
   },
   "keywords": [],

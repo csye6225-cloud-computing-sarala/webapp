@@ -54,6 +54,7 @@ export const deleteFromS3 = async (params) => {
 // Function to close StatsD client
 function closeStatsdClient() {
   statsdClient.close();
+  statsdClient.socket.unref();
 }
 
 export { statsdClient, closeStatsdClient };
