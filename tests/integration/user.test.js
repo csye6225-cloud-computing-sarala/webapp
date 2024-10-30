@@ -23,6 +23,10 @@ describe("User API Endpoints", () => {
     });
   });
 
+  afterAll(() => {
+    closeStatsdClient();
+  });
+
   describe("GET /v1/user/self", () => {
     it("should require authentication", async () => {
       const res = await request(app).get("/v1/user/self");
