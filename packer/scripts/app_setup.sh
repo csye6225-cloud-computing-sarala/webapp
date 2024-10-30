@@ -14,7 +14,7 @@ sudo unzip /tmp/webapp.zip -d /var/www/webapp
 
 # # Set the ownership of the webapp directory
 # sudo chown -R www-data:www-data /var/www/webapp
-sudo chown -R ubuntu:ubuntu /opt/csye6225
+sudo chown -R csye6225:csye6225 /opt/csye6225
 sudo chmod -R 755 /opt/csye6225
  
 # Start and enable your service (assuming you have a service setup)
