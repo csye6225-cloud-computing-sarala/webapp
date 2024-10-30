@@ -3,6 +3,7 @@ import app from "../../src/app";
 import User from "../../src/models/User";
 import sequelize from "../../src/config/database";
 import bcrypt from "bcryptjs";
+import { closeStatsdClient } from "../../src/config/statsd.js";
 
 describe("User API Endpoints", () => {
   let testUser;
@@ -149,7 +150,7 @@ describe("User API Endpoints", () => {
       const res = await request(app).post("/v1/user").send({
         first_name: "Jane",
         last_name: "Doe",
-        email: "jane1.doe@example.com",
+        email: "jane.doe@example.com",
         password: "password123",
       });
       expect(res.status).toBe(200);
