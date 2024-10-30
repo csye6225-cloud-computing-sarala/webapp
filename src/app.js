@@ -2,18 +2,12 @@ import express from "express";
 import sequelize from "./config/database.js";
 import healthzRoutes from "./routes/healthz.js";
 import userRoutes from "./routes/userRoutes.js";
-import StatsD from "node-statsd";
+import { closeStatsdClient, statsdClient } from "./config/statsd.js";
 import profilePicRoutes from "./routes/profilePicRoutes.js";
 import apiMetricsMiddleware from "./middleware/apiMetricsMiddleware.js";
 
 const app = express();
 app.use(express.json());
-
-// Initialize StatsD client
-const statsdClient = new StatsD({
-  host: "localhost",
-  port: 8125,
-});
 
 // Use the API metrics middleware for all routes
 app.use(apiMetricsMiddleware);
@@ -52,4 +46,9 @@ sequelize
     console.error("Failed to sync database:", error);
   });
 
-export { app, statsdClient };
+// Close StatsD client when the application shuts down
+process.on("exit", () => {
+  closeStatsdClient();
+});
+
+export default app;

@@ -3,7 +3,7 @@ import {
   createUser,
   updateUserDetails,
 } from "../services/userService.js";
-import { statsdClient } from "../app.js";
+import { statsdClient } from "../config/statsd.js";
 import { calculateDuration } from "../utils/timingUtils.js";
 import logger from "../utils/logger.js";
 

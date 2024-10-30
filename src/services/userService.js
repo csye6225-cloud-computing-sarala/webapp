@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import { statsdClient } from "../app.js";
 import { trackDatabaseQuery } from "../utils/monitoringUtils.js";
+import logger from "../utils/logger.js";
 
 /**
  * @desc Fetch user data excluding the password field
@@ -120,8 +120,11 @@ export const updateUserDetails = async (userId, updates) => {
     const updatedUser = await trackDatabaseQuery("saveUser", async () =>
       user.save()
     );
-    const userWithoutPassword = updatedUser.get({ plain: true });
-    delete userWithoutPassword.password;
+    const userWithoutPassword = updatedUser.get({
+      plain: true,
+      attributes: { exclude: ["password"] },
+    });
+    // delete userWithoutPassword.password;
 
     logger.info(`User details updated successfully for user ID: ${userId}`);
     return updatedUser;

@@ -145,7 +145,7 @@ describe("User API Endpoints", () => {
       const res = await request(app).post("/v1/user").send({
         first_name: "Jane",
         last_name: "Doe",
-        email: "jane.doe@example.com",
+        email: "jane1.doe@example.com",
         password: "password123",
       });
       expect(res.status).toBe(200);

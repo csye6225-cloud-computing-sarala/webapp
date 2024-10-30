@@ -6,7 +6,11 @@ import {
 import StatsD from "node-statsd";
 
 // Initialize StatsD client with a namespace
-const statsdClient = new StatsD({ prefix: "aws.s3." });
+const statsdClient = new StatsD({
+  host: "localhost",
+  port: 8125,
+  prefix: "aws.s3.",
+});
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || "us-east-1",
@@ -47,4 +51,9 @@ export const deleteFromS3 = async (params) => {
   }
 };
 
-export { statsdClient };
+// Function to close StatsD client
+function closeStatsdClient() {
+  statsdClient.close();
+}
+
+export { statsdClient, closeStatsdClient };
