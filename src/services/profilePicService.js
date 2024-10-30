@@ -1,10 +1,12 @@
-import { uploadToS3, deleteFromS3 } from "../config/statsd.js";
+import {
+  uploadToS3,
+  deleteFromS3,
+  trackDatabaseQuery,
+} from "../config/statsd.js";
 import Image from "../models/Image.js";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 import logger from "../utils/logger.js";
-import { calculateDuration } from "../utils/timingUtils.js";
-import { trackDatabaseQuery } from "../utils/monitoringUtils.js";
 
 const upload = multer({ storage: multer.memoryStorage() }).single("profilePic");
 
@@ -40,19 +42,21 @@ export const uploadProfilePicService = async (req) => {
         );
 
         if (existingProfilePic) {
-          // Delete the existing picture from S3
-          const deleteParams = {
-            Bucket: process.env.S3_BUCKET,
-            Key: `profile-pics/${existingProfilePic.file_name}`,
-          };
-          await deleteFromS3(deleteParams);
-          await trackDatabaseQuery("Image.destroy", () =>
-            existingProfilePic.destroy()
-          );
-          logger.info(
-            `Existing profile picture deleted for user ID: ${req.user.id}`
+          // Send an error response if an image already exists
+          return reject(
+            new Error(
+              "Profile picture already exists. Please delete the existing picture before uploading a new one."
+            )
           );
         }
+
+        const fileName = `${uuidv4()}-${file.originalname}`;
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET,
+          Key: `profile-pics/${fileName}`,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        };
 
         await uploadToS3(uploadParams); // Upload to S3
 

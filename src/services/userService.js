@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import { trackDatabaseQuery } from "../utils/monitoringUtils.js";
+import { trackDatabaseQuery } from "../config/statsd.js";
 import logger from "../utils/logger.js";
 
 /**

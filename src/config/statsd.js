@@ -9,7 +9,7 @@ import StatsD from "node-statsd";
 const statsdClient = new StatsD({
   host: "localhost",
   port: 8125,
-  prefix: "aws.s3.",
+  prefix: "csye6225.",
 });
 
 const s3Client = new S3Client({
@@ -20,7 +20,42 @@ const s3Client = new S3Client({
   },
 });
 
-// Helper function to measure operation duration with StatsD
+// Middleware to track API calls and duration
+export const apiMetricsMiddleware = (req, res, next) => {
+  const routePath = req.route ? req.route.path : req.path;
+  const method = req.method.toLowerCase();
+  const metricBase = `api.${method}.${routePath.replace(/\//g, "_")}`;
+
+  // Count API call
+  statsdClient.increment(`${metricBase}.call_count`);
+
+  // Start timing the API response
+  const start = process.hrtime();
+  res.on("finish", () => {
+    const diff = process.hrtime(start);
+    const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+    statsdClient.timing(`${metricBase}.duration`, durationMs);
+  });
+
+  next();
+};
+
+// Helper function to track database query duration
+export const trackDatabaseQuery = async (queryName, queryFunction) => {
+  const start = process.hrtime();
+  try {
+    const result = await queryFunction();
+    const diff = process.hrtime(start);
+    const durationMs = diff[0] * 1000 + diff[1] / 1e6;
+    statsdClient.timing(`db.${queryName}.duration`, durationMs);
+    return result;
+  } catch (error) {
+    statsdClient.increment(`db.${queryName}.error_count`);
+    throw error;
+  }
+};
+
+// Helper function to measure S3 operation duration with StatsD
 async function withStatsD(operation, label, command) {
   const start = process.hrtime();
   try {
@@ -40,16 +75,8 @@ async function withStatsD(operation, label, command) {
 export const uploadToS3 = (params) =>
   withStatsD("s3.upload", "upload", new PutObjectCommand(params));
 
-export const deleteFromS3 = async (params) => {
-  try {
-    const result = await s3Client.send(new DeleteObjectCommand(params));
-    statsdClient.increment("s3.delete.success");
-    return result;
-  } catch (error) {
-    statsdClient.increment("s3.delete.error");
-    throw error;
-  }
-};
+export const deleteFromS3 = (params) =>
+  withStatsD("s3.delete", "delete", new DeleteObjectCommand(params));
 
 // Function to close StatsD client
 function closeStatsdClient() {

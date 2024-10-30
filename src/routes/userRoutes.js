@@ -39,9 +39,8 @@ const hasDisallowedHeaders = (req, res, next) => {
 // Middleware to reject unwanted HTTP methods on specific endpoints
 userRoutes.use("/user/self", basicAuth, (req, res, next) => {
   if (
-    ["DELETE", "PATCH", "OPTIONS", "HEAD"].includes(req.method)
-    // &&
-    // req.path === "/user/self"
+    ["DELETE", "PATCH", "OPTIONS", "HEAD"].includes(req.method) &&
+    req.path === "/user/self"
   ) {
     logger.info(`Method ${req.method} not allowed on /user/self`);
     return res.status(405).end();

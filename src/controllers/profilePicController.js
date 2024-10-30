@@ -19,7 +19,7 @@ export const uploadProfilePic = async (req, res, next) => {
     res.status(201).json({ message: "Profile picture uploaded successfully" });
   } catch (error) {
     logger.error("Error uploading profile picture:", error);
-    next(error);
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -34,7 +34,7 @@ export const getProfilePic = async (req, res, next) => {
     res.status(200).json(profilePic);
   } catch (error) {
     logger.error("Error retrieving profile picture:", error);
-    next(error);
+    res.status(404).json({ message: error.message });
   }
 };
 

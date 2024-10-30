@@ -2,9 +2,12 @@ import express from "express";
 import sequelize from "./config/database.js";
 import healthzRoutes from "./routes/healthz.js";
 import userRoutes from "./routes/userRoutes.js";
-import { closeStatsdClient, statsdClient } from "./config/statsd.js";
+import {
+  closeStatsdClient,
+  statsdClient,
+  apiMetricsMiddleware,
+} from "./config/statsd.js";
 import profilePicRoutes from "./routes/profilePicRoutes.js";
-import apiMetricsMiddleware from "./middleware/apiMetricsMiddleware.js";
 
 const app = express();
 app.use(express.json());
