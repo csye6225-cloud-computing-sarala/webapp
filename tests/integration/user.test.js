@@ -3,7 +3,7 @@ import app from "../../src/app";
 import User from "../../src/models/User";
 import sequelize from "../../src/config/database";
 import bcrypt from "bcryptjs";
-import { closeStatsdClient } from "../../src/config/statsd.js";
+import { statsdClient } from "../../src/config/statsd.js";
 
 describe("User API Endpoints", () => {
   let testUser;
@@ -25,7 +25,7 @@ describe("User API Endpoints", () => {
   });
 
   afterAll(() => {
-    closeStatsdClient();
+    statsdClient.close();
   });
 
   describe("GET /v1/user/self", () => {
