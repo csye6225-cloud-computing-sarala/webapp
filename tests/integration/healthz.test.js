@@ -1,15 +1,19 @@
 import { app, sequelize, server } from "../../src/server.js";
 import request from "supertest";
+import { statsdClient } from "../../src/config/statsd.js"; // Import the StatsD client
 
+// Close all open connections after tests
 afterAll(async () => {
   await sequelize.close();
-  server.close();
+  await server.close();
+  statsdClient.close(); // Ensure StatsD client closes
 });
 
-jest.mock("sequelize", () => {
-  const actualSequelize = jest.requireActual("sequelize");
+// Mock Sequelize to avoid real database connections
+jest.mock("../../src/config/database", () => {
+  const { Sequelize } = jest.requireActual("sequelize");
 
-  class MockSequelize extends actualSequelize.Sequelize {
+  class MockSequelize extends Sequelize {
     constructor() {
       super("database", "username", "password", {
         dialect: "postgres",
@@ -20,10 +24,22 @@ jest.mock("sequelize", () => {
     }
   }
 
-  return {
-    ...actualSequelize,
-    Sequelize: MockSequelize,
+  return new MockSequelize();
+});
+
+jest.mock("aws-sdk", () => {
+  const mockCloudWatch = {
+    putMetricData: jest.fn().mockReturnThis(),
+    promise: jest.fn().mockResolvedValue({}),
   };
+
+  return {
+    CloudWatch: jest.fn(() => mockCloudWatch),
+  };
+});
+
+beforeEach(() => {
+  sequelize.authenticate.mockClear();
 });
 
 describe("Method Not Allowed Handling", () => {
@@ -49,10 +65,6 @@ describe("Method Not Allowed Handling", () => {
 });
 
 describe("/healthz endpoint", () => {
-  beforeEach(() => {
-    sequelize.authenticate.mockClear();
-  });
-
   it("should return 200 if the database connection is successful", async () => {
     sequelize.authenticate.mockResolvedValueOnce();
     const response = await request(app).get("/healthz");
