@@ -8,6 +8,7 @@ import {
   apiMetricsMiddleware,
 } from "./config/statsd.js";
 import profilePicRoutes from "./routes/profilePicRoutes.js";
+import { sendMetricToCloudWatch } from "../src/utils/cloudwatchMetrics.js";
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use((req, res, next) => {
 
   // Count each API call
   statsdClient.increment(`api.calls.${metricPath}`);
+  sendMetricToCloudWatch(`api.calls.${metricPath}`, 1, "Count");
 
   // Track response time
   const startTime = process.hrtime();
@@ -29,6 +31,11 @@ app.use((req, res, next) => {
     const diff = process.hrtime(startTime);
     const durationMs = diff[0] * 1000 + diff[1] / 1e6;
     statsdClient.timing(`api.response_time.${metricPath}`, durationMs);
+    sendMetricToCloudWatch(
+      `api.response_time.${metricPath}`,
+      durationMs,
+      "Milliseconds"
+    );
   });
 
   next();
@@ -44,10 +51,19 @@ sequelize
   .sync()
   .then(() => {
     console.log("Database synced");
+    sendMetricToCloudWatch("database.sync.success", 1, "Count");
   })
   .catch((error) => {
     console.error("Failed to sync database:", error);
+    sendMetricToCloudWatch("database.sync.error", 1, "Count");
   });
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("API Error:", err);
+  sendMetricToCloudWatch("api.errors", 1, "Count"); // Track errors in CloudWatch
+  res.status(500).send("Internal Server Error");
+});
 
 // Close StatsD client when the application shuts down
 process.on("exit", () => {

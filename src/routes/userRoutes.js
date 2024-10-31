@@ -6,6 +6,7 @@ import {
   updateUserController,
 } from "../controllers/userController.js";
 import logger from "../utils/logger.js";
+import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 
 const userRoutes = express.Router();
 
@@ -29,6 +30,7 @@ const hasDisallowedHeaders = (req, res, next) => {
   );
   if (disallowedHeader) {
     logger.warn(`Disallowed header: ${disallowedHeader}`);
+    sendMetricToCloudWatch("userRoutes.disallowedHeader", 1, "Count");
     return res
       .status(400)
       .json({ message: `Disallowed header: ${disallowedHeader}` });
@@ -43,6 +45,7 @@ userRoutes.use("/user/self", basicAuth, (req, res, next) => {
     req.path === "/user/self"
   ) {
     logger.info(`Method ${req.method} not allowed on /user/self`);
+    sendMetricToCloudWatch("userRoutes.invalidMethod.user_self", 1, "Count");
     return res.status(405).end();
   }
   next();
@@ -52,6 +55,7 @@ userRoutes.use("/user/self", basicAuth, (req, res, next) => {
 const noQueryParams = (req, res, next) => {
   if (Object.keys(req.query).length > 0) {
     logger.warn("Query parameters are not allowed in POST requests");
+    sendMetricToCloudWatch("userRoutes.queryParamsNotAllowed", 1, "Count");
     return res
       .status(400)
       .json({ message: "Query parameters are not allowed in POST requests" });
@@ -72,6 +76,7 @@ const noBodyParams = (req, res, next) => {
     Object.keys(req.body).length > 0
   ) {
     logger.warn("Body parameters are not allowed for GET or DELETE requests");
+    sendMetricToCloudWatch("userRoutes.bodyParamsNotAllowed", 1, "Count");
     return res.status(400).json({ message: "Body parameters are not allowed" });
   }
   next();
@@ -84,6 +89,7 @@ const checkContentType = (req, res, next) => {
     req.headers["content-type"] !== "application/json"
   ) {
     logger.warn("Content-Type must be application/json for POST/PUT requests");
+    sendMetricToCloudWatch("userRoutes.invalidContentType", 1, "Count");
     return res
       .status(400)
       .json({ message: "Content-Type must be application/json" });
@@ -98,6 +104,7 @@ const rejectEmptyBody = (req, res, next) => {
     Object.keys(req.body).length === 0
   ) {
     logger.warn("Request body cannot be empty for POST/PUT requests");
+    sendMetricToCloudWatch("userRoutes.emptyBodyNotAllowed", 1, "Count");
     return res.status(400).json({ message: "Request body cannot be empty" });
   }
   next();
@@ -107,6 +114,7 @@ const rejectEmptyBody = (req, res, next) => {
 const checkAuthorizationHeader = (req, res, next) => {
   if (!req.headers.authorization) {
     logger.warn("Authorization header is required");
+    sendMetricToCloudWatch("userRoutes.missingAuthorization", 1, "Count");
     return res
       .status(401)
       .json({ message: "Authorization header is required" });
@@ -122,6 +130,10 @@ userRoutes.get(
   noQueryParams,
   hasDisallowedHeaders,
   noBodyParams,
+  (req, res, next) => {
+    sendMetricToCloudWatch("userRoutes.getUserSelf", 1, "Count");
+    next();
+  },
   getUserController
 );
 
@@ -132,6 +144,10 @@ userRoutes.post(
   hasDisallowedHeaders,
   checkContentType,
   rejectEmptyBody,
+  (req, res, next) => {
+    sendMetricToCloudWatch("userRoutes.createUser", 1, "Count");
+    next();
+  },
   createUserController
 );
 
@@ -143,6 +159,10 @@ userRoutes.put(
   hasDisallowedHeaders,
   checkContentType,
   rejectEmptyBody,
+  (req, res, next) => {
+    sendMetricToCloudWatch("userRoutes.updateUserSelf", 1, "Count");
+    next();
+  },
   updateUserController
 );
 

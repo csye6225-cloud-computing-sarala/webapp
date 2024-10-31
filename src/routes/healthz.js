@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 import { handleHealthCheck } from "../services/database.js";
 import logger from "../utils/logger.js";
+import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 
 // Middleware to restrict HTTP methods on /healthz
 router.use("/healthz", (req, res, next) => {

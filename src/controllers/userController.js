@@ -6,6 +6,7 @@ import {
 import { statsdClient } from "../config/statsd.js";
 import { calculateDuration } from "../utils/timingUtils.js";
 import logger from "../utils/logger.js";
+import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 
 /**
  * @desc Get user data based on the authenticated user's ID
@@ -22,16 +23,20 @@ export const getUserController = async (req, res) => {
     const userData = await getUserData(req.user.id);
     const durationMs = calculateDuration(start); // Calculate duration for StatsD
     statsdClient.timing("api.user.get.duration", durationMs);
+    sendMetricToCloudWatch("api.user.get.duration", durationMs, "Milliseconds");
 
     if (!userData) {
       logger.warn(`User data not found for user ID: ${req.user.id}`);
+      sendMetricToCloudWatch("api.user.get.not_found", 1, "Count");
       return res.status(404).json({ message: "User not found" });
     }
 
     logger.info(`User data successfully retrieved for user ID: ${req.user.id}`);
+    sendMetricToCloudWatch("api.user.get.success", 1, "Count");
     res.json(userData);
   } catch (error) {
     logger.error(`GET User Error for user ID ${req.user.id}: ${error.message}`);
+    sendMetricToCloudWatch("api.user.get.error", 1, "Count");
     console.error("GET User Error:", error);
     res.status(500).json({ message: "Internal Server Error" }); // Handle unexpected errors
   }
@@ -52,17 +57,29 @@ export const createUserController = async (req, res) => {
     const userData = await createUser(req.body); // Attempt to create a new user
     const durationMs = calculateDuration(start); // Calculate duration for StatsD
     statsdClient.timing("api.user.create.duration", durationMs);
+    sendMetricToCloudWatch(
+      "api.user.create.duration",
+      durationMs,
+      "Milliseconds"
+    );
 
     logger.info(`User created successfully with email: ${req.body.email}`);
+    sendMetricToCloudWatch("api.user.create.success", 1, "Count");
     res.status(200).json(userData); // Return the created user's data
   } catch (error) {
     const durationMs = calculateDuration(start); // Calculate duration in case of error
     statsdClient.timing("api.user.create.error.duration", durationMs);
+    sendMetricToCloudWatch(
+      "api.user.create.error.duration",
+      durationMs,
+      "Milliseconds"
+    );
 
     if (error.name === "SequelizeUniqueConstraintError") {
       logger.warn(
         `User creation failed. User already exists with email: ${req.body.email}`
       );
+      sendMetricToCloudWatch("api.user.create.exists", 1, "Count");
       console.error("User already exists:", error);
       res.status(400).json({ message: "User already exists" });
     } else {
@@ -71,6 +88,7 @@ export const createUserController = async (req, res) => {
         `Create User Error for email ${req.body.email}: ${error.message}`
       );
       console.error("Create User Error:", error);
+      sendMetricToCloudWatch("api.user.create.error", 1, "Count");
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -91,24 +109,37 @@ export const updateUserController = async (req, res) => {
     const updatedUserData = await updateUserDetails(req.user.id, req.body); // Attempt to update user details
     const durationMs = calculateDuration(start); // Calculate duration for StatsD
     statsdClient.timing("api.user.update.duration", durationMs);
+    sendMetricToCloudWatch(
+      "api.user.update.duration",
+      durationMs,
+      "Milliseconds"
+    );
 
     // If no changes were detected, log and respond with a 400 status
     if (updatedUserData === null) {
       logger.warn(`No changes detected for user ID: ${req.user.id}`);
+      sendMetricToCloudWatch("api.user.update.no_change", 1, "Count");
       return res.status(400).json({ message: "No changes detected" });
     }
 
     logger.info(`User data updated successfully for user ID: ${req.user.id}`);
+    sendMetricToCloudWatch("api.user.update.success", 1, "Count");
     res.status(204).json(updatedUserData); // Return the updated user data with no content status
   } catch (error) {
     const durationMs = calculateDuration(start); // Calculate duration in case of error
     statsdClient.timing("api.user.update.error.duration", durationMs);
+    sendMetricToCloudWatch(
+      "api.user.update.error.duration",
+      durationMs,
+      "Milliseconds"
+    );
 
     if (error.message.startsWith("Invalid fields")) {
       // If invalid fields are provided, respond with a 400 status
       logger.warn(
         `Update User Error: Invalid fields in request for user ID: ${req.user.id}`
       );
+      sendMetricToCloudWatch("api.user.update.invalid_fields", 1, "Count");
       return res.status(400).json({ message: error.message });
     }
 
@@ -116,6 +147,7 @@ export const updateUserController = async (req, res) => {
     logger.error(
       `Update User Error for user ID ${req.user.id}: ${error.message}`
     );
+    sendMetricToCloudWatch("api.user.update.error", 1, "Count");
     console.error("Update User Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }

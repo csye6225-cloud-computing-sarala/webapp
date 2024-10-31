@@ -2,6 +2,7 @@ import sequelize from "../config/database.js";
 import logger from "../utils/logger.js";
 import { statsdClient } from "../config/statsd.js";
 import { calculateDuration } from "../utils/timingUtils.js";
+import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 
 /**
  * @desc Handles health check by verifying database connection and ensuring request headers are valid
@@ -40,6 +41,7 @@ async function handleHealthCheck(req, res) {
       "Invalid request: Disallowed headers or unexpected query/body parameters"
     );
     res.setHeader("Cache-Control", "no-cache");
+    sendMetricToCloudWatch("healthCheck.invalid_request", 1, "Count");
     return res.status(400).end();
   }
   try {
@@ -47,6 +49,12 @@ async function handleHealthCheck(req, res) {
     await sequelize.authenticate();
     const durationMs = calculateDuration(start);
     statsdClient.timing("database.healthCheck.duration", durationMs);
+    sendMetricToCloudWatch("database.healthCheck.success", 1, "Count"); // Track successful health check
+    sendMetricToCloudWatch(
+      "database.healthCheck.duration",
+      durationMs,
+      "Milliseconds"
+    ); // Track health check duration
 
     logger.info("Database connection verified successfully");
     res.setHeader("Cache-Control", "no-cache");
@@ -55,6 +63,12 @@ async function handleHealthCheck(req, res) {
     // Log and track database connectivity issues
     const durationMs = calculateDuration(start);
     statsdClient.timing("database.healthCheck.duration", durationMs);
+    sendMetricToCloudWatch("database.healthCheck.failure", 1, "Count"); // Track failed health check
+    sendMetricToCloudWatch(
+      "database.healthCheck.duration",
+      durationMs,
+      "Milliseconds"
+    ); // Track health check duration for failure
 
     logger.error("Database connection failed:", error);
     console.error("Unable to connect to the database:", error);
