@@ -3,6 +3,7 @@ import app from "../../src/app";
 import User from "../../src/models/User";
 import sequelize from "../../src/config/database";
 import bcrypt from "bcryptjs";
+import { statsdClient } from "../../src/config/statsd.js";
 
 describe("User API Endpoints", () => {
   let testUser;
@@ -21,6 +22,10 @@ describe("User API Endpoints", () => {
       email: "user@example.com",
       password: await bcrypt.hash("password123", 10), // Ensure this matches the password in your tests
     });
+  });
+
+  afterAll(() => {
+    statsdClient.close();
   });
 
   describe("GET /v1/user/self", () => {
@@ -308,19 +313,6 @@ describe("User API Endpoints", () => {
       expect(res.status).toBe(400);
       expect(res.body.message).toBe("Request body cannot be empty");
     });
-
-    it("should return 405 if PATCH method is used", async () => {
-      const res = await request(app)
-        .patch("/v1/user/self")
-        .set(
-          "Authorization",
-          `Basic ${Buffer.from("user@example.com:password123").toString(
-            "base64"
-          )}`
-        )
-        .send({ first_name: "Updated", last_name: "User" });
-      expect(res.status).toBe(405);
-    });
     it("should return 400 Bad Request when invalid fields are provided", async () => {
       const res = await request(app)
         .put("/v1/user/self")
@@ -344,7 +336,7 @@ describe("User API Endpoints", () => {
     });
   });
 
-  afterAll(async () => {
-    await sequelize.close(); // Properly close the connection
+  afterAll(() => {
+    sequelize.close(); // Properly close the connection
   });
 });

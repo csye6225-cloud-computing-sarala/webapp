@@ -1,50 +1,57 @@
 import { Sequelize } from "sequelize";
 import "dotenv/config";
 
-const env = process.env.NODE_ENV;
-console.log("process.env.NODE_ENV: ", process.env.NODE_ENV);
-console.log("env: ", env);
+const { NODE_ENV } = process.env;
+console.log("Application Environment:", NODE_ENV);
 
-if (env === "test") {
-  process.env.DB_NAME = process.env.TEST_DB_NAME;
-  process.env.DB_HOST = process.env.TEST_DB_HOST;
-  process.env.DB_PORT = process.env.TEST_DB_PORT;
-  process.env.DB_USER = process.env.TEST_DB_USER;
-  process.env.DB_PASSWORD = process.env.TEST_DB_PASSWORD;
-} else if (env === "production") {
-  process.env.DB_NAME = process.env.PROD_DB_NAME;
-  process.env.DB_HOST = process.env.PROD_DB_HOST;
-  process.env.DB_PORT = process.env.PROD_DB_PORT;
-  process.env.DB_USER = process.env.PROD_DB_USER;
-  process.env.DB_PASSWORD = process.env.PROD_DB_PASSWORD;
-} else {
-  // Default to development if not test or production
-  process.env.DB_NAME = process.env.DB_NAME;
-  process.env.DB_HOST = process.env.DB_HOST;
-  process.env.DB_PORT = process.env.DB_PORT;
-  process.env.DB_USER = process.env.DB_USER;
-  process.env.DB_PASSWORD = process.env.DB_PASSWORD;
+// Map environment configurations
+const envConfig = {
+  development: {
+    DB_NAME: process.env.DB_NAME,
+    DB_HOST: process.env.DB_HOST,
+    DB_PORT: process.env.DB_PORT,
+    DB_USER: process.env.DB_USER,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+  },
+  test: {
+    DB_NAME: process.env.TEST_DB_NAME,
+    DB_HOST: process.env.TEST_DB_HOST,
+    DB_PORT: process.env.TEST_DB_PORT,
+    DB_USER: process.env.TEST_DB_USER,
+    DB_PASSWORD: process.env.TEST_DB_PASSWORD,
+  },
+  production: {
+    DB_NAME: process.env.PROD_DB_NAME,
+    DB_HOST: process.env.PROD_DB_HOST,
+    DB_PORT: process.env.PROD_DB_PORT,
+    DB_USER: process.env.PROD_DB_USER,
+    DB_PASSWORD: process.env.PROD_DB_PASSWORD,
+  },
+};
+
+// Select the correct configuration based on NODE_ENV or default to development
+const { DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD } =
+  envConfig[NODE_ENV] || envConfig["development"];
+
+// Validate required environment variables
+if (!DB_NAME || !DB_HOST || !DB_USER || !DB_PASSWORD) {
+  throw new Error("Missing necessary database environment variables.");
 }
 
-console.log("Environment Variables:", {
-  database: process.env.DB_NAME,
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  dialect: process.env.DB_DIALECT,
+console.log("Connecting to Database with the following settings:", {
+  database: DB_NAME,
+  host: DB_HOST,
+  port: DB_PORT,
+  username: DB_USER,
+  dialect: "postgres",
 });
 
-//initializing sequelize object with db credentials
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    dialect: "postgres",
-    port: process.env.DB_PORT,
-    logging: false,
-  }
-);
+// Initializing sequelize with database credentials
+const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
+  host: DB_HOST,
+  dialect: "postgres",
+  port: DB_PORT,
+  logging: false,
+});
 
 export default sequelize;
