@@ -21,6 +21,7 @@ async function handleHealthCheck(req, res) {
     "host",
     "accept-encoding",
     "connection",
+    "x-forwarded-for",
   ];
 
   logger.debug("Received headers:", req.headers);
