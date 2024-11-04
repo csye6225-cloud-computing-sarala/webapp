@@ -21,6 +21,7 @@ const allowedHeaders = [
   "content-type",
   "authorization",
   "content-length",
+  "x-forwarded-for",
 ];
 
 // Middleware to check for any disallowed headers
