@@ -25,6 +25,7 @@ const allowedHeaders = [
   "x-forwarded-proto",
   "x-forwarded-host",
   "x-forwarded-port",
+  "x-amzn-trace-id",
 ];
 
 // Middleware to check for any disallowed headers
