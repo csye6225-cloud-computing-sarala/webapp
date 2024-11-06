@@ -1,29 +1,77 @@
 {
-  "agent": {
-      "metrics_collection_interval": 10,
-      "logfile": "/var/logs/amazon-cloudwatch-agent.log"
-  },
-  "logs": {
+    "agent": {
+      "metrics_collection_interval": 60,
+      "run_as_user": "root",
+      "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
+    },
+    "logs": {
       "logs_collected": {
-          "files": {
-              "collect_list": [
-                  {
-                      "file_path": "/var/log/tomcat9/csye6225.log",
-                      "log_group_name": "csye6225",
-                      "log_stream_name": "webapp"
-                  }
-              ]
-          }
-      },
-      "log_stream_name": "cloudwatch_log_stream"
-  },
-  "metrics":{
-    "metrics_collected":{
-       "statsd":{
-          "service_address":":8125",
-          "metrics_collection_interval":15,
-          "metrics_aggregation_interval":300
-       }
+        "files": {
+          "collect_list": [
+            {
+              "file_path": "/var/log/csye6225/webapp.log",
+              "log_group_name": "csye6225",
+              "log_stream_name": "{instance_id}",
+              "timestamp_format": "%Y-%m-%d %H:%M:%S",
+              "timezone": "UTC"
+            }
+          ]
+        }
+      }
+    },
+    "metrics": {
+      "namespace": "CSYE6225/Metrics",
+      "metrics_collected": {
+        "cpu": {
+          "measurement": [
+            "cpu_usage_idle",
+            "cpu_usage_iowait",
+            "cpu_usage_user",
+            "cpu_usage_system",
+            "cpu_usage_nice",
+            "cpu_usage_irq",
+            "cpu_usage_softirq",
+            "cpu_usage_steal"
+          ],
+          "totalcpu": true,
+          "metrics_collection_interval": 60
+        },
+        "mem": {
+          "measurement": [
+            "mem_used_percent"
+          ],
+          "metrics_collection_interval": 60
+        },
+        "disk": {
+          "measurement": [
+            "disk_used_percent"
+          ],
+          "metrics_collection_interval": 60,
+          "resources": [
+            "/"
+          ],
+          "ignore_file_system_types": [
+            "sysfs", "devtmpfs"
+          ]
+        },
+        "swap": {
+          "measurement": [
+            "swap_used_percent"
+          ],
+          "metrics_collection_interval": 60
+        },
+        "net": {
+          "measurement": [
+            "net_bytes_sent",
+            "net_bytes_recv",
+            "net_packets_sent",
+            "net_packets_recv"
+          ],
+          "metrics_collection_interval": 60,
+          "resources": [
+            "*"
+          ]
+        }
+      }
     }
- }
-}
+  }  
