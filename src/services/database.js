@@ -25,6 +25,7 @@ async function handleHealthCheck(req, res) {
     "x-forwarded-proto",
     "x-forwarded-host",
     "x-forwarded-port",
+    "x-amzn-trace-id",
   ];
 
   logger.debug("Received headers:", req.headers);
