@@ -20,5 +20,6 @@ const logger = winston.createLogger({
     new winston.transports.File({ filename: path.join(logDir, "app.log") }),
   ],
 });
+console.log("Logger initialized:", logger);
 
 export default logger;
