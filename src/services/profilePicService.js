@@ -39,9 +39,10 @@ export const uploadProfilePicService = async (req) => {
       }
 
       const fileName = `${uuidv4()}-${file.originalname}`;
+      const userFolder = `profile-pics/${req.user.id}/`;
       const uploadParams = {
         Bucket: process.env.S3_BUCKET,
-        Key: `profile-pics/${fileName}`,
+        Key: `${userFolder}${fileName}`,
         Body: file.buffer,
         ContentType: file.mimetype,
       };
@@ -73,7 +74,7 @@ export const uploadProfilePicService = async (req) => {
           Image.create({
             user_id: req.user.id,
             file_name: fileName,
-            url: `https://${process.env.S3_BUCKET}.s3.amazonaws.com/profile-pics/${fileName}`,
+            url: `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${userFolder}${fileName}`,
             upload_date: new Date(),
           })
         );
@@ -158,7 +159,7 @@ export const deleteProfilePicService = async (userId) => {
 
     const deleteParams = {
       Bucket: process.env.S3_BUCKET,
-      Key: `profile-pics/${profilePic.file_name}`,
+      Key: `profile-pics/${userId}/${profilePic.file_name}`,
     };
 
     await deleteFromS3(deleteParams); // Delete from S3

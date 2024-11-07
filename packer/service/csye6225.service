@@ -9,6 +9,7 @@ User=csye6225
 Group=csye6225
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
+EnvironmentFile=/etc/environment
 WorkingDirectory=/var/www/webapp
 
 [Install]

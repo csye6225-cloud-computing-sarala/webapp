@@ -19,6 +19,5 @@ sudo chmod -R 755 /var/www/webapp
 # Set permissions for the logs directory specifically
 sudo chmod 755 /var/www/webapp/logs
 
-# Start and enable your service (assuming you have a service setup)
-sudo systemctl start csye6225.service
+# sudo systemctl start csye6225.service
 sudo systemctl enable csye6225.service

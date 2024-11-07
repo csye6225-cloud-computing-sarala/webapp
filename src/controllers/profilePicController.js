@@ -16,6 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() }).single("profilePic");
  * @access Private
  */
 export const uploadProfilePic = async (req, res, next) => {
+  const start = process.hrtime();
   try {
     await uploadProfilePicService(req);
     const durationMs = calculateDuration(start);
@@ -83,6 +84,7 @@ export const getProfilePic = async (req, res, next) => {
  * @access Private
  */
 export const deleteProfilePic = async (req, res, next) => {
+  const start = process.hrtime();
   try {
     await deleteProfilePicService(req.user.id);
     const durationMs = calculateDuration(start);

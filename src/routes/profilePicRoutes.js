@@ -17,6 +17,7 @@ const profilePicRoutes = express.Router();
  * Requires the user to be authenticated.
  */
 profilePicRoutes.post("/user/self/pic", basicAuth, async (req, res, next) => {
+  const start = process.hrtime();
   try {
     await uploadProfilePic(req, res);
 
@@ -47,6 +48,7 @@ profilePicRoutes.post("/user/self/pic", basicAuth, async (req, res, next) => {
  * Requires the user to be authenticated.
  */
 profilePicRoutes.get("/user/self/pic", basicAuth, async (req, res, next) => {
+  const start = process.hrtime();
   try {
     await getProfilePic(req, res);
 
@@ -79,6 +81,7 @@ profilePicRoutes.get("/user/self/pic", basicAuth, async (req, res, next) => {
  * Requires the user to be authenticated.
  */
 profilePicRoutes.delete("/user/self/pic", basicAuth, async (req, res, next) => {
+  const start = process.hrtime();
   try {
     await deleteProfilePic(req, res);
 
