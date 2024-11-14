@@ -55,6 +55,23 @@ export const createUserController = async (req, res) => {
 
   try {
     const userData = await createUser(req.body); // Attempt to create a new user
+    // Prepare the message payload for SNS
+    const messagePayload = {
+      email: userData.email,
+      userId: userData.id,
+      name: userData.name,
+      timestamp: new Date().toISOString(),
+    };
+    // Publish the message to SNS
+    const sns = new AWS.SNS();
+    const params = {
+      Message: JSON.stringify(messagePayload),
+      TopicArn: process.env.SNS_TOPIC_ARN,
+    };
+
+    await sns.publish(params).promise();
+    logger.info(`Published message to SNS for user ${userData.email}`);
+
     const durationMs = calculateDuration(start); // Calculate duration for StatsD
     statsdClient.timing("api.user.create.duration", durationMs);
     sendMetricToCloudWatch(
@@ -89,6 +106,7 @@ export const createUserController = async (req, res) => {
       );
       console.error("Create User Error:", error);
       sendMetricToCloudWatch("api.user.create.error", 1, "Count");
+      logger.info("Error publishing to SNS:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -150,5 +168,28 @@ export const updateUserController = async (req, res) => {
     sendMetricToCloudWatch("api.user.update.error", 1, "Count");
     console.error("Update User Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const verifyEmailController = async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    // Validate the token (you'll need to implement token validation logic)
+    const email = await validateVerificationToken(token);
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired verification token." });
+    }
+
+    // Update the user's isVerified status
+    await User.update({ isVerified: true }, { where: { email } });
+
+    res.status(200).json({ message: "Email verified successfully!" });
+  } catch (error) {
+    logger.error(`Email verification error: ${error.message}`);
+    res.status(500).json({ message: "Internal server error." });
   }
 };

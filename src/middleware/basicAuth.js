@@ -30,6 +30,14 @@ const basicAuth = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!user.isVerified) {
+      sendMetricToCloudWatch("user.unverified_access_attempt", 1, "Count");
+      logger.warn(`Access denied for unverified user ${user.email}`);
+      return res.status(403).json({
+        message: "Please verify your email address to access this resource.",
+      });
+    }
+
     // Validate password
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {

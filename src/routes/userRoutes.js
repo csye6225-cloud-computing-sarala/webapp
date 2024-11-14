@@ -4,6 +4,7 @@ import {
   getUserController,
   createUserController,
   updateUserController,
+  verifyEmailController,
 } from "../controllers/userController.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
@@ -170,5 +171,7 @@ userRoutes.put(
   },
   updateUserController
 );
+
+userRoutes.get("/verify-email", verifyEmailController);
 
 export default userRoutes;

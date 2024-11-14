@@ -63,6 +63,7 @@ export const createUser = async (userData) => {
         last_name,
         email,
         password: hashedPassword,
+        isVerified: false,
       })
     );
 
@@ -190,4 +191,15 @@ export const updateUserDetails = async (userId, updates) => {
     sendMetricToCloudWatch("database.updateUserDetails.error", 1, "Count");
     throw error;
   }
+};
+
+export const validateVerificationToken = async (token) => {
+  // Query the database to find the token
+  const record = await VerificationToken.findOne({ where: { token } });
+
+  if (record && !isTokenExpired(record.expiresAt)) {
+    return record.email;
+  }
+
+  return null;
 };
