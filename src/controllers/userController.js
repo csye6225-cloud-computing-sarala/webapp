@@ -7,6 +7,7 @@ import { statsdClient } from "../config/statsd.js";
 import { calculateDuration } from "../utils/timingUtils.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
+import AWS from "aws-sdk";
 
 /**
  * @desc Get user data based on the authenticated user's ID
