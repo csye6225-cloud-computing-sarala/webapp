@@ -4,6 +4,8 @@ import { trackDatabaseQuery } from "../config/statsd.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import { calculateDuration } from "../utils/timingUtils.js";
+import { isTokenExpired } from "../utils/tokenUtils.js";
+import validator from "validator";
 
 /**
  * @desc Fetch user data excluding the password field
@@ -50,6 +52,12 @@ export const getUserData = async (userId) => {
  * @returns {object} Created user data excluding the password
  */
 export const createUser = async (userData) => {
+  const { email } = userData;
+
+  // Validate email
+  if (!validator.isEmail(email)) {
+    throw new Error("Invalid email format");
+  }
   logger.info(`Creating a new user with email: ${userData.email}`);
   const start = process.hrtime();
 
@@ -191,15 +199,4 @@ export const updateUserDetails = async (userId, updates) => {
     sendMetricToCloudWatch("database.updateUserDetails.error", 1, "Count");
     throw error;
   }
-};
-
-export const validateVerificationToken = async (token) => {
-  // Query the database to find the token
-  const record = await VerificationToken.findOne({ where: { token } });
-
-  if (record && !isTokenExpired(record.expiresAt)) {
-    return record.email;
-  }
-
-  return null;
 };

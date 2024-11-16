@@ -8,6 +8,8 @@ import { calculateDuration } from "../utils/timingUtils.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import AWS from "aws-sdk";
+import { isTokenExpired } from "../utils/tokenUtils.js";
+import validator from "validator";
 
 /**
  * @desc Get user data based on the authenticated user's ID
@@ -53,6 +55,15 @@ export const createUserController = async (req, res) => {
   logger.info(
     `Received POST request to create a new user with email: ${req.body.email}`
   );
+
+  const { email } = req.body;
+
+  // Validate email
+  if (!validator.isEmail(email)) {
+    logger.warn(`Invalid email format: ${email}`);
+    sendMetricToCloudWatch("api.user.create.invalid_email", 1, "Count");
+    return res.status(400).json({ message: "Invalid email format" });
+  }
 
   try {
     const userData = await createUser(req.body); // Attempt to create a new user
@@ -193,4 +204,15 @@ export const verifyEmailController = async (req, res) => {
     logger.error(`Email verification error: ${error.message}`);
     res.status(500).json({ message: "Internal server error." });
   }
+};
+
+export const validateVerificationToken = async (token) => {
+  // Query the database to find the token
+  const record = await VerificationToken.findOne({ where: { token } });
+
+  if (record && !isTokenExpired(record.expiresAt)) {
+    return record.email;
+  }
+
+  return null;
 };
