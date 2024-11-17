@@ -2,30 +2,25 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
-class VerificationToken extends Model {}
-
-VerificationToken.init(
+const VerificationToken = sequelize.define(
+  "verification_token",
   {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      primaryKey: true,
     },
     token: {
       type: DataTypes.STRING,
       allowNull: false,
-      primaryKey: true,
     },
-    expiresAt: {
+    expiryTime: {
       type: DataTypes.DATE,
       allowNull: false,
     },
   },
   {
-    sequelize,
-    modelName: "VerificationToken",
-    tableName: "email_verification_tokens",
-    timestamps: false,
+    timestamps: false, // Disable default timestamps
+    tableName: "verification_tokens", // Explicitly set table name
   }
 );
 

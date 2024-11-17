@@ -4,10 +4,10 @@ import {
   getUserController,
   createUserController,
   updateUserController,
-  verifyEmailController,
 } from "../controllers/userController.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
+import { verificationController } from "../controllers/verificationController.js";
 
 const userRoutes = express.Router();
 
@@ -172,6 +172,6 @@ userRoutes.put(
   updateUserController
 );
 
-userRoutes.get("/verify-email", verifyEmailController);
+userRoutes.get("/user/verify-email", verificationController);
 
 export default userRoutes;

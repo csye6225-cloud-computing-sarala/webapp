@@ -8,8 +8,8 @@ import { calculateDuration } from "../utils/timingUtils.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import AWS from "aws-sdk";
-import { isTokenExpired } from "../utils/tokenUtils.js";
 import validator from "validator";
+import VerificationToken from "../models/VerificationToken.js";
 
 /**
  * @desc Get user data based on the authenticated user's ID
@@ -181,38 +181,4 @@ export const updateUserController = async (req, res) => {
     console.error("Update User Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-};
-
-export const verifyEmailController = async (req, res) => {
-  const { token } = req.query;
-
-  try {
-    // Validate the token (you'll need to implement token validation logic)
-    const email = await validateVerificationToken(token);
-
-    if (!email) {
-      return res
-        .status(400)
-        .json({ message: "Invalid or expired verification token." });
-    }
-
-    // Update the user's isVerified status
-    await User.update({ isVerified: true }, { where: { email } });
-
-    res.status(200).json({ message: "Email verified successfully!" });
-  } catch (error) {
-    logger.error(`Email verification error: ${error.message}`);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-export const validateVerificationToken = async (token) => {
-  // Query the database to find the token
-  const record = await VerificationToken.findOne({ where: { token } });
-
-  if (record && !isTokenExpired(record.expiresAt)) {
-    return record.email;
-  }
-
-  return null;
 };

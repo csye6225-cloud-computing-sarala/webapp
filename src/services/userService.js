@@ -4,7 +4,6 @@ import { trackDatabaseQuery } from "../config/statsd.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import { calculateDuration } from "../utils/timingUtils.js";
-import { isTokenExpired } from "../utils/tokenUtils.js";
 import validator from "validator";
 
 /**
