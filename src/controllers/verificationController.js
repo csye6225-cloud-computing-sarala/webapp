@@ -3,7 +3,9 @@ import VerificationToken from "../models/VerificationToken.js";
 import User from "../models/User.js";
 
 export const verificationController = async (req, res) => {
+  console.log("Hi");
   const { token } = req.query;
+  console.log("Received token:", token);
 
   if (!token) {
     return res.status(400).json({ message: "Verification token is missing." });

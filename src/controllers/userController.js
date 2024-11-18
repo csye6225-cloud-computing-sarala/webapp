@@ -72,15 +72,17 @@ export const createUserController = async (req, res) => {
 
     // Generate a verification token
     const verificationToken = uuidv4();
-    const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // Token valid for 2 min
+    const expiryTime = new Date(Date.now() + 10 * 60 * 1000); // Token valid for 2 min
 
     // Store the verification token in the database
-    await VerificationToken.create({
+    const savedToken = await VerificationToken.create({
       email: userData.email,
       id: userData.id,
       token: verificationToken,
       expiryTime,
     });
+
+    console.log("Verification token saved:", savedToken);
 
     // Prepare the message payload for SNS
     const messagePayload = {
