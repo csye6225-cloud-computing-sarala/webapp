@@ -177,7 +177,8 @@ jobs:
         run: |
           aws autoscaling update-auto-scaling-group \
             --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-            --launch-template "LaunchTemplateId=${{ secrets.LAUNCH_TEMPLATE_ID }},Version=$Latest"
+            --launch-template "LaunchTemplateId=${{ secrets.LAUNCH_TEMPLATE_ID }},Version=${{ env.LATEST_VERSION }}" \
+            --region ${{ secrets.AWS_REGION }}
 
       # Step 8: Rolling Updates
       - name: Perform Rolling Updates
