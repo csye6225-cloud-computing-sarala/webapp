@@ -10,6 +10,7 @@ import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import AWS from "aws-sdk";
 import validator from "validator";
 import VerificationToken from "../models/VerificationToken.js";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * @desc Get user data based on the authenticated user's ID
@@ -66,14 +67,30 @@ export const createUserController = async (req, res) => {
   }
 
   try {
-    const userData = await createUser(req.body); // Attempt to create a new user
+    // Create the user
+    const userData = await createUser(req.body);
+
+    // Generate a verification token
+    const verificationToken = uuidv4();
+    const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // Token valid for 2 min
+
+    // Store the verification token in the database
+    await VerificationToken.create({
+      email: userData.email,
+      id: userData.id,
+      token: verificationToken,
+      expiryTime,
+    });
+
     // Prepare the message payload for SNS
     const messagePayload = {
       email: userData.email,
-      userId: userData.id,
-      name: userData.name,
+      id: userData.id,
+      token: verificationToken,
       timestamp: new Date().toISOString(),
     };
+
+    console.log("message payload: " + messagePayload);
     // Publish the message to SNS
     const sns = new AWS.SNS();
     const params = {
@@ -81,7 +98,17 @@ export const createUserController = async (req, res) => {
       TopicArn: process.env.SNS_TOPIC_ARN,
     };
 
-    await sns.publish(params).promise();
+    try {
+      await sns.publish(params).promise();
+      logger.info(`Published message to SNS for user ${userData.email}`);
+    } catch (snsError) {
+      logger.error(
+        `Error publishing message to SNS for user ${userData.email}: ${snsError.message}`
+      );
+      sendMetricToCloudWatch("api.user.create.sns_publish_error", 1, "Count");
+      throw snsError;
+    }
+
     logger.info(`Published message to SNS for user ${userData.email}`);
 
     const durationMs = calculateDuration(start); // Calculate duration for StatsD
