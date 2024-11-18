@@ -143,11 +143,9 @@ jobs:
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
 
       # Step 5: Extract the AMI ID
-      - name: Extract AMI ID
+      - name: Use Extracted AMI ID
         id: extract-ami
         run: |
-          AMI_ID=$(cat latest_ami_id.txt)
-          echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
           echo "Extracted AMI ID: $AMI_ID"
 
       # Step 6: Update Launch Template
