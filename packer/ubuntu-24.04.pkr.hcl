@@ -186,11 +186,4 @@ build {
       "sudo mv /tmp/development.env /var/www/webapp/.env"
     ]
   }
-
-  # Post-Processor to save AMI ID
-  post-processors "shell" {
-    inline = [
-      "echo '{{ .artifact_id }}' | cut -d':' -f2 > latest_ami_id.txt"
-    ]
-  }
 }

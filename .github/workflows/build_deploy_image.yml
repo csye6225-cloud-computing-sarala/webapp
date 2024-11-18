@@ -139,6 +139,8 @@ jobs:
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
           packer/ubuntu-24.04.pkr.hcl
+          AMI_ID=$(grep -oP 'ami-\w+' build.log | tail -n 1)
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
 
       # Step 5: Extract the AMI ID
       - name: Extract AMI ID
