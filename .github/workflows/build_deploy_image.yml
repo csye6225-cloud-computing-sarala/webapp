@@ -181,6 +181,34 @@ jobs:
             --region ${{ secrets.AWS_REGION }}
 
       # Step 8: Rolling Updates
+      - name: Check for Existing Instance Refresh
+        run: |
+          REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+            --query "InstanceRefreshes[0].Status" --output text)
+          if [[ "$REFRESH_STATUS" == "InProgress" ]]; then
+            echo "An Instance Refresh is already in progress. Waiting for it to complete..."
+            REFRESH_ID=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+              --query "InstanceRefreshes[0].InstanceRefreshId" --output text)
+            while true; do
+              STATUS=$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+                --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" --output text)
+              echo "Current status: $STATUS"
+              if [[ "$STATUS" == "Successful" ]]; then
+                echo "Instance refresh completed successfully."
+                break
+              elif [[ "$STATUS" == "Failed" ]]; then
+                echo "Instance refresh failed."
+                exit 1
+              fi
+              sleep 30
+            done
+          else
+            echo "No instance refresh in progress. Proceeding with a new instance refresh."
+          fi
+
       - name: Perform Rolling Updates
         run: |
           aws autoscaling start-instance-refresh \
