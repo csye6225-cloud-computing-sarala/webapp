@@ -149,11 +149,19 @@ jobs:
           echo "Extracted AMI ID: $AMI_ID"
 
       # Step 6: Update Launch Template
+      - name: Get Latest Launch Template Version
+        id: get-latest-version
+        run: |
+          LATEST_VERSION=$(aws ec2 describe-launch-template-versions \
+            --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
+            --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+
       - name: Update AWS Launch Template
         run: |
           aws ec2 create-launch-template-version \
             --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
-            --source-version $Latest \
+            --source-version ${{ env.LATEST_VERSION }} \
             --launch-template-data "{
               \"ImageId\": \"${{ env.AMI_ID }}\",
               \"InstanceType\": \"${{ secrets.AWS_INSTANCE_TYPE }}\"
@@ -162,7 +170,7 @@ jobs:
             --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
             --default-version $(aws ec2 describe-launch-template-versions \
               --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
-              --query 'LaunchTemplateVersions[?DefaultVersion].VersionNumber' --output text)
+              --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
 
       # Step 7: Update Auto Scaling Group
       - name: Update Auto Scaling Group
