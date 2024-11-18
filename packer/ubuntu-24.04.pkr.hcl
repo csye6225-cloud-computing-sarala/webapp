@@ -191,7 +191,7 @@ build {
   post-processors {
     shell-local {
       inline = [
-        "echo '{{ .artifact_id }}' > latest_ami_id.txt"
+        "echo '{{ .artifact_id }}' | cut -d':' -f2 > latest_ami_id.txt"
       ]
     }
   }
