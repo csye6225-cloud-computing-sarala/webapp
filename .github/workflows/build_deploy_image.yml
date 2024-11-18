@@ -186,3 +186,25 @@ jobs:
           aws autoscaling start-instance-refresh \
             --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
             --preferences '{"MinHealthyPercentage": 50}'
+
+      # Step 9: Wait for Instance Refresh to Complete
+      - name: Wait for Instance Refresh to Complete
+        run: |
+          REFRESH_ID=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+            --query "InstanceRefreshes[0].InstanceRefreshId" --output text)
+          echo "Waiting for instance refresh $REFRESH_ID to complete..."
+          while true; do
+            STATUS=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+              --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" --output text)
+            echo "Current status: $STATUS"
+            if [[ "$STATUS" == "Successful" ]]; then
+              echo "Instance refresh completed successfully."
+              break
+            elif [[ "$STATUS" == "Failed" ]]; then
+              echo "Instance refresh failed."
+              exit 1
+            fi
+            sleep 30
+          done
