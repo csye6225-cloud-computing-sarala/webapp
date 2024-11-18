@@ -140,22 +140,40 @@ jobs:
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
           packer/ubuntu-24.04.pkr.hcl
 
-      # Step 4: Extract and Save AMI ID
-      - name: Get Latest AMI ID
-        id: ami_id
+      # Step 5: Extract the AMI ID
+      - name: Extract AMI ID
+        id: extract-ami
         run: |
-          echo "AMI_ID=$(cat latest_ami_id.txt)" >> $GITHUB_ENV
-          echo "::set-output name=ami_id::$(cat latest_ami_id.txt)"
+          AMI_ID=$(cat latest_ami_id.txt)
+          echo "AMI_ID=${AMI_ID}" >> $GITHUB_ENV
+          echo "Extracted AMI ID: $AMI_ID"
 
-      # Step 5: Trigger Terraform Workflow in Another Repo
-      - name: Trigger Terraform Workflow
-        if: success()
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          repository: csye6225-cloud-computing-sarala/tf-aws-infra
-          event-type: update-launch-template
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          client-payload: |
-            {
-              "ami_id": "${{ env.ami_id }}"
-            }
+      # Step 6: Update Launch Template
+      - name: Update AWS Launch Template
+        run: |
+          aws ec2 create-launch-template-version \
+            --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
+            --source-version $Latest \
+            --launch-template-data "{
+              \"ImageId\": \"${{ env.AMI_ID }}\",
+              \"InstanceType\": \"${{ secrets.AWS_INSTANCE_TYPE }}\"
+            }"
+          aws ec2 modify-launch-template \
+            --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
+            --default-version $(aws ec2 describe-launch-template-versions \
+              --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
+              --query 'LaunchTemplateVersions[?DefaultVersion].VersionNumber' --output text)
+
+      # Step 7: Update Auto Scaling Group
+      - name: Update Auto Scaling Group
+        run: |
+          aws autoscaling update-auto-scaling-group \
+            --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+            --launch-template "LaunchTemplateId=${{ secrets.LAUNCH_TEMPLATE_ID }},Version=$Latest"
+
+      # Step 8: Rolling Updates
+      - name: Perform Rolling Updates
+        run: |
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
+            --preferences '{"MinHealthyPercentage": 50}'

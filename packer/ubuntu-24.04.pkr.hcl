@@ -188,11 +188,9 @@ build {
   }
 
   # Post-Processor to save AMI ID
-  post-processors {
-    shell-local {
-      inline = [
-        "echo '{{ .artifact_id }}' | cut -d':' -f2 > latest_ami_id.txt"
-      ]
-    }
+  post-processors "shell" {
+    inline = [
+      "echo '{{ .artifact_id }}' | cut -d':' -f2 > latest_ami_id.txt"
+    ]
   }
 }
