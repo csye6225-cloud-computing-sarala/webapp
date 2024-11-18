@@ -139,3 +139,23 @@ jobs:
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
           packer/ubuntu-24.04.pkr.hcl
+
+      # Step 4: Extract and Save AMI ID
+      - name: Get Latest AMI ID
+        id: ami_id
+        run: |
+          echo "AMI_ID=$(cat latest_ami_id.txt)" >> $GITHUB_ENV
+          echo "::set-output name=ami_id::$(cat latest_ami_id.txt)"
+
+      # Step 5: Trigger Terraform Workflow in Another Repo
+      - name: Trigger Terraform Workflow
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          repository: csye6225-cloud-computing-sarala/tf-aws-infra
+          event-type: update-launch-template
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          client-payload: |
+            {
+              "ami_id": "${{ env.ami_id }}"
+            }

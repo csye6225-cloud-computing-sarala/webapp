@@ -186,4 +186,20 @@ build {
       "sudo mv /tmp/development.env /var/www/webapp/.env"
     ]
   }
+
+  # Post-Processor to save AMI ID
+  post-processors {
+    post-processor "shell-local" {
+      inline = [
+        "echo '${build.ami_id}' > latest_ami_id.txt"
+      ]
+    }
+  }
+
+  # Shell-local provisioner to update Launch Template
+  provisioner "shell-local" {
+    inline = [
+      "python3 update_launch_template.py"
+    ]
+  }
 }
