@@ -138,8 +138,8 @@ jobs:
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
-          packer/ubuntu-24.04.pkr.hcl
-          AMI_ID=$(grep -oP 'ami-\w+' build.log | tail -n 1)
+          packer/ubuntu-24.04.pkr.hcl -machine-readable > output.log
+          AMI_ID=$(grep -m 1 -oP 'ami-\w+' output.log)
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
 
       # Step 5: Extract the AMI ID
