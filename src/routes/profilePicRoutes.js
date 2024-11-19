@@ -8,6 +8,7 @@ import basicAuth from "../middleware/basicAuth.js";
 import logger from "../utils/logger.js";
 import { calculateDuration } from "../utils/timingUtils.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
+import verifyEmailMiddleware from "../middleware/verifyEmail.js";
 
 const profilePicRoutes = express.Router();
 
@@ -16,96 +17,111 @@ const profilePicRoutes = express.Router();
  * @description Uploads a profile picture for the authenticated user.
  * Requires the user to be authenticated.
  */
-profilePicRoutes.post("/user/self/pic", basicAuth, async (req, res, next) => {
-  const start = process.hrtime();
-  try {
-    await uploadProfilePic(req, res);
+profilePicRoutes.post(
+  "/user/self/pic",
+  basicAuth,
+  verifyEmailMiddleware,
+  async (req, res, next) => {
+    const start = process.hrtime();
+    try {
+      await uploadProfilePic(req, res);
 
-    const durationMs = calculateDuration(start);
-    sendMetricToCloudWatch("api.profilepic.upload.success", 1, "Count");
-    sendMetricToCloudWatch(
-      "api.profilepic.upload.duration",
-      durationMs,
-      "Milliseconds"
-    );
-  } catch (error) {
-    const durationMs = calculateDuration(start);
-    sendMetricToCloudWatch("api.profilepic.upload.error", 1, "Count");
-    sendMetricToCloudWatch(
-      "api.profilepic.upload.error.duration",
-      durationMs,
-      "Milliseconds"
-    );
+      const durationMs = calculateDuration(start);
+      sendMetricToCloudWatch("api.profilepic.upload.success", 1, "Count");
+      sendMetricToCloudWatch(
+        "api.profilepic.upload.duration",
+        durationMs,
+        "Milliseconds"
+      );
+    } catch (error) {
+      const durationMs = calculateDuration(start);
+      sendMetricToCloudWatch("api.profilepic.upload.error", 1, "Count");
+      sendMetricToCloudWatch(
+        "api.profilepic.upload.error.duration",
+        durationMs,
+        "Milliseconds"
+      );
 
-    logger.error("Error uploading profile picture:", error);
-    next(error); // Pass error to error-handling middleware
+      logger.error("Error uploading profile picture:", error);
+      next(error); // Pass error to error-handling middleware
+    }
   }
-});
+);
 
 /**
  * @route GET /user/self/pic
  * @description Retrieves the profile picture metadata for the authenticated user.
  * Requires the user to be authenticated.
  */
-profilePicRoutes.get("/user/self/pic", basicAuth, async (req, res, next) => {
-  const start = process.hrtime();
-  try {
-    await getProfilePic(req, res);
+profilePicRoutes.get(
+  "/user/self/pic",
+  basicAuth,
+  verifyEmailMiddleware,
+  async (req, res, next) => {
+    const start = process.hrtime();
+    try {
+      await getProfilePic(req, res);
 
-    const durationMs = calculateDuration(start);
-    sendMetricToCloudWatch("api.profilepic.get.success", 1, "Count");
-    sendMetricToCloudWatch(
-      "api.profilepic.get.duration",
-      durationMs,
-      "Milliseconds"
-    );
+      const durationMs = calculateDuration(start);
+      sendMetricToCloudWatch("api.profilepic.get.success", 1, "Count");
+      sendMetricToCloudWatch(
+        "api.profilepic.get.duration",
+        durationMs,
+        "Milliseconds"
+      );
 
-    logger.info("Profile picture retrieved successfully");
-  } catch (error) {
-    const durationMs = calculateDuration(start);
-    sendMetricToCloudWatch("api.profilepic.get.error", 1, "Count");
-    sendMetricToCloudWatch(
-      "api.profilepic.get.error.duration",
-      durationMs,
-      "Milliseconds"
-    );
+      logger.info("Profile picture retrieved successfully");
+    } catch (error) {
+      const durationMs = calculateDuration(start);
+      sendMetricToCloudWatch("api.profilepic.get.error", 1, "Count");
+      sendMetricToCloudWatch(
+        "api.profilepic.get.error.duration",
+        durationMs,
+        "Milliseconds"
+      );
 
-    logger.error("Error retrieving profile picture:", error);
-    next(error); // Pass error to error-handling middleware
+      logger.error("Error retrieving profile picture:", error);
+      next(error); // Pass error to error-handling middleware
+    }
   }
-});
+);
 
 /**
  * @route DELETE /user/self/pic
  * @description Deletes the profile picture for the authenticated user.
  * Requires the user to be authenticated.
  */
-profilePicRoutes.delete("/user/self/pic", basicAuth, async (req, res, next) => {
-  const start = process.hrtime();
-  try {
-    await deleteProfilePic(req, res);
+profilePicRoutes.delete(
+  "/user/self/pic",
+  basicAuth,
+  verifyEmailMiddleware,
+  async (req, res, next) => {
+    const start = process.hrtime();
+    try {
+      await deleteProfilePic(req, res);
 
-    const durationMs = calculateDuration(start);
-    sendMetricToCloudWatch("api.profilepic.delete.success", 1, "Count");
-    sendMetricToCloudWatch(
-      "api.profilepic.delete.duration",
-      durationMs,
-      "Milliseconds"
-    );
+      const durationMs = calculateDuration(start);
+      sendMetricToCloudWatch("api.profilepic.delete.success", 1, "Count");
+      sendMetricToCloudWatch(
+        "api.profilepic.delete.duration",
+        durationMs,
+        "Milliseconds"
+      );
 
-    logger.info("Profile picture deleted successfully");
-  } catch (error) {
-    const durationMs = calculateDuration(start);
-    sendMetricToCloudWatch("api.profilepic.delete.error", 1, "Count");
-    sendMetricToCloudWatch(
-      "api.profilepic.delete.error.duration",
-      durationMs,
-      "Milliseconds"
-    );
+      logger.info("Profile picture deleted successfully");
+    } catch (error) {
+      const durationMs = calculateDuration(start);
+      sendMetricToCloudWatch("api.profilepic.delete.error", 1, "Count");
+      sendMetricToCloudWatch(
+        "api.profilepic.delete.error.duration",
+        durationMs,
+        "Milliseconds"
+      );
 
-    logger.error("Error deleting profile picture:", error);
-    next(error); // Pass error to error-handling middleware
+      logger.error("Error deleting profile picture:", error);
+      next(error); // Pass error to error-handling middleware
+    }
   }
-});
+);
 
 export default profilePicRoutes;

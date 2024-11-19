@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import logger from "../utils/logger.js";
+import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 
 const basicAuth = async (req, res, next) => {
   logger.info("Authorizing user via basicAuth middleware");
