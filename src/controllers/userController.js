@@ -11,6 +11,7 @@ import AWS from "aws-sdk";
 import validator from "validator";
 import VerificationToken from "../models/VerificationToken.js";
 import { v4 as uuidv4 } from "uuid";
+import "dotenv/config";
 
 /**
  * @desc Get user data based on the authenticated user's ID
@@ -76,6 +77,8 @@ export const createUserController = async (req, res) => {
     const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // Token valid for 2 min
 
     const verificationUrl = `http://${process.env.DOMAIN}/v1/user/verify-email?token=${verificationToken}`;
+
+    console.log("url: " + verificationUrl);
 
     // Store the verification token in the database
     const savedToken = await VerificationToken.create({
