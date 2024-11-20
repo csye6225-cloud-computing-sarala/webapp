@@ -138,7 +138,7 @@ jobs:
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
-          packer/ubuntu-24.04.pkr.hcl -machine-readable > output.log
+          /packer/aws.pkr.hcl | tee output.log
           AMI_ID=$(grep -m 1 -oP 'ami-\w+' output.log)
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
 
