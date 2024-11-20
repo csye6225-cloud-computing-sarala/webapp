@@ -85,6 +85,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION=${{ secrets.AWS_REGION }}
           S3_BUCKET=${{ secrets.S3_BUCKET }}
+          DOMAIN=${{ secrets.DOMAIN }}
           EOF
         shell: bash
 
@@ -138,6 +139,7 @@ jobs:
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
+          -var "domain=${{ secrets.DOMAIN }}" \
           packer/ubuntu-24.04.pkr.hcl | tee output.log
           AMI_ID=$(grep -m 1 -oP 'ami-\w+' output.log)
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
