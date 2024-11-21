@@ -139,101 +139,21 @@ jobs:
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
-          packer/ubuntu-24.04.pkr.hcl | tee output.log
-          AMI_ID=$(grep -m 1 -oP 'ami-\w+' output.log)
-          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+          packer/ubuntu-24.04.pkr.hcl
 
-      # Step 5: Extract the AMI ID
-      - name: Use Extracted AMI ID
-        id: extract-ami
+      - name: Update Launch Template
         run: |
-          echo "Extracted AMI ID: $AMI_ID"
+          asg_name="app-asg"
 
-      # # Step 6: Update Launch Template
-      # - name: Get Latest Launch Template Version
-      #   id: get-latest-version
-      #   run: |
-      #     LATEST_VERSION=$(aws ec2 describe-launch-template-versions \
-      #       --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
-      #       --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
-      #     echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+          asg_nametest=$(aws autoscaling describe-auto-scaling-groups \
+            --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
+            --output text)
 
-      # - name: Update AWS Launch Template
-      #   run: |
-      #     aws ec2 create-launch-template-version \
-      #       --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
-      #       --source-version ${{ env.LATEST_VERSION }} \
-      #       --launch-template-data "{
-      #         \"ImageId\": \"${{ env.AMI_ID }}\",
-      #         \"InstanceType\": \"${{ secrets.AWS_INSTANCE_TYPE }}\"
-      #       }"
-      #     aws ec2 modify-launch-template \
-      #       --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
-      #       --default-version $(aws ec2 describe-launch-template-versions \
-      #         --launch-template-id ${{ secrets.LAUNCH_TEMPLATE_ID }} \
-      #         --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
+          echo "Latest Auto Scaling Group Name: $asg_nametest"
+          echo "Latest Auto Scaling Group Name: $asg_name"
 
-      # # Step 7: Update Auto Scaling Group
-      # - name: Update Auto Scaling Group
-      #   run: |
-      #     aws autoscaling update-auto-scaling-group \
-      #       --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #       --launch-template "LaunchTemplateId=${{ secrets.LAUNCH_TEMPLATE_ID }},Version=${{ env.LATEST_VERSION }}" \
-      #       --region ${{ secrets.AWS_REGION }}
-
-      # # Step 8: Rolling Updates
-      # - name: Check for Existing Instance Refresh
-      #   run: |
-      #     REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \
-      #       --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #       --query "InstanceRefreshes[0].Status" --output text)
-      #     if [[ "$REFRESH_STATUS" == "InProgress" ]]; then
-      #       echo "An Instance Refresh is already in progress. Waiting for it to complete..."
-      #       REFRESH_ID=$(aws autoscaling describe-instance-refreshes \
-      #         --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #         --query "InstanceRefreshes[0].InstanceRefreshId" --output text)
-      #       while true; do
-      #         STATUS=$(aws autoscaling describe-instance-refreshes \
-      #           --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #           --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" --output text)
-      #         echo "Current status: $STATUS"
-      #         if [[ "$STATUS" == "Successful" ]]; then
-      #           echo "Instance refresh completed successfully."
-      #           break
-      #         elif [[ "$STATUS" == "Failed" ]]; then
-      #           echo "Instance refresh failed."
-      #           exit 1
-      #         fi
-      #         sleep 30
-      #       done
-      #     else
-      #       echo "No instance refresh in progress. Proceeding with a new instance refresh."
-      #     fi
-
-      # - name: Perform Rolling Updates
-      #   run: |
-      #     aws autoscaling start-instance-refresh \
-      #       --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #       --preferences '{"MinHealthyPercentage": 50}'
-
-      # # Step 9: Wait for Instance Refresh to Complete
-      # - name: Wait for Instance Refresh to Complete
-      #   run: |
-      #     REFRESH_ID=$(aws autoscaling describe-instance-refreshes \
-      #       --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #       --query "InstanceRefreshes[0].InstanceRefreshId" --output text)
-      #     echo "Waiting for instance refresh $REFRESH_ID to complete..."
-      #     while true; do
-      #       STATUS=$(aws autoscaling describe-instance-refreshes \
-      #         --auto-scaling-group-name ${{ secrets.ASG_NAME }} \
-      #         --query "InstanceRefreshes[?InstanceRefreshId=='$REFRESH_ID'].Status" --output text)
-      #       echo "Current status: $STATUS"
-      #       if [[ "$STATUS" == "Successful" ]]; then
-      #         echo "Instance refresh completed successfully."
-      #         break
-      #       elif [[ "$STATUS" == "Failed" ]]; then
-      #         echo "Instance refresh failed."
-      #         exit 1
-      #       fi
-      #       sleep 30
-      #     done
+          launch_template_id=$(aws autoscaling describe-auto-scaling-groups \
+          --auto-scaling-group-names $asg_name \
+          --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
+          --output text)
+          echo "Launch Template ID: $launch_template_id"
