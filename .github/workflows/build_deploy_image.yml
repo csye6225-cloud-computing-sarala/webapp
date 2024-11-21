@@ -158,6 +158,19 @@ jobs:
       # Step 10: Run Packer Build
       - name: Run Packer Build
         run: |
+          if [ "${{ secrets.ENVIRONMENT }}" == "dev" ]; then
+          vpc_id="${{ secrets.DEV_VPC_ID }}"
+          subnet_id="${{ secrets.DEV_SUBNET_ID }}"
+          elif [ "${{ secrets.ENVIRONMENT }}" == "demo" ]; then
+          vpc_id="${{ secrets.DEMO_VPC_ID }}"
+          subnet_id="${{ secrets.DEMO_SUBNET_ID }}"
+          else
+          echo "Invalid environment specified: ${{ secrets.ENVIRONMENT }}"
+          exit 1
+          fi
+          echo "Using VPC ID: $vpc_id"
+          echo "Using Subnet ID: $subnet_id"
+
           packer build \
           -var "prod_db_user=${{ secrets.PROD_DB_USER }}" \
           -var "prod_db_password=${{ secrets.PROD_DB_PASSWORD }}" \
