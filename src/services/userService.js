@@ -4,6 +4,7 @@ import { trackDatabaseQuery } from "../config/statsd.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import { calculateDuration } from "../utils/timingUtils.js";
+import validator from "validator";
 
 /**
  * @desc Fetch user data excluding the password field
@@ -50,6 +51,12 @@ export const getUserData = async (userId) => {
  * @returns {object} Created user data excluding the password
  */
 export const createUser = async (userData) => {
+  const { email } = userData;
+
+  // Validate email
+  if (!validator.isEmail(email)) {
+    throw new Error("Invalid email format");
+  }
   logger.info(`Creating a new user with email: ${userData.email}`);
   const start = process.hrtime();
 
@@ -63,6 +70,7 @@ export const createUser = async (userData) => {
         last_name,
         email,
         password: hashedPassword,
+        isVerified: false,
       })
     );
 

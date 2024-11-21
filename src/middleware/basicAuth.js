@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import logger from "../utils/logger.js";
+import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 
 const basicAuth = async (req, res, next) => {
   logger.info("Authorizing user via basicAuth middleware");
@@ -28,6 +29,15 @@ const basicAuth = async (req, res, next) => {
     if (!user) {
       logger.warn(`User with email ${email} not found`);
       return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("isVerfified: ", user.isVerified);
+    if (!user.isVerified) {
+      sendMetricToCloudWatch("user.unverified_access_attempt", 1, "Count");
+      logger.warn(`Access denied for unverified user ${user.email}`);
+      return res.status(403).json({
+        message: "Please verify your email address to access this resource.",
+      });
     }
 
     // Validate password

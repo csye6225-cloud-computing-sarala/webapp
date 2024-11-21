@@ -7,6 +7,7 @@ import {
 } from "../controllers/userController.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
+import { verificationController } from "../controllers/verificationController.js";
 
 const userRoutes = express.Router();
 
@@ -170,5 +171,7 @@ userRoutes.put(
   },
   updateUserController
 );
+
+userRoutes.get("/user/verify-email", verificationController);
 
 export default userRoutes;

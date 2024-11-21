@@ -7,6 +7,11 @@ import { statsdClient } from "../config/statsd.js";
 import { calculateDuration } from "../utils/timingUtils.js";
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
+import AWS from "aws-sdk";
+import validator from "validator";
+import VerificationToken from "../models/VerificationToken.js";
+import { v4 as uuidv4 } from "uuid";
+import "dotenv/config";
 
 /**
  * @desc Get user data based on the authenticated user's ID
@@ -53,8 +58,66 @@ export const createUserController = async (req, res) => {
     `Received POST request to create a new user with email: ${req.body.email}`
   );
 
+  const { email } = req.body;
+
+  // Validate email
+  if (!validator.isEmail(email)) {
+    logger.warn(`Invalid email format: ${email}`);
+    sendMetricToCloudWatch("api.user.create.invalid_email", 1, "Count");
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
   try {
-    const userData = await createUser(req.body); // Attempt to create a new user
+    // Create the user
+    const userData = await createUser(req.body);
+
+    // Generate a verification token
+    const verificationToken = uuidv4();
+
+    const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // Token valid for 2 min
+
+    const verificationUrl = `http://${process.env.DOMAIN}/v1/user/verify-email?token=${verificationToken}`;
+
+    console.log("url: " + verificationUrl);
+
+    // Store the verification token in the database
+    const savedToken = await VerificationToken.create({
+      email: userData.email,
+      id: userData.id,
+      token: verificationToken,
+      expiryTime,
+    });
+
+    console.log("Verification token saved:", savedToken);
+
+    // Prepare the message payload for SNS
+    const messagePayload = {
+      email: userData.email,
+      url: verificationUrl,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("message payload: " + messagePayload);
+    // Publish the message to SNS
+    const sns = new AWS.SNS();
+    const params = {
+      Message: JSON.stringify(messagePayload),
+      TopicArn: process.env.SNS_TOPIC_ARN,
+    };
+
+    try {
+      await sns.publish(params).promise();
+      logger.info(`Published message to SNS for user ${userData.email}`);
+    } catch (snsError) {
+      logger.error(
+        `Error publishing message to SNS for user ${userData.email}: ${snsError.message}`
+      );
+      sendMetricToCloudWatch("api.user.create.sns_publish_error", 1, "Count");
+      throw snsError;
+    }
+
+    logger.info(`Published message to SNS for user ${userData.email}`);
+
     const durationMs = calculateDuration(start); // Calculate duration for StatsD
     statsdClient.timing("api.user.create.duration", durationMs);
     sendMetricToCloudWatch(
@@ -89,6 +152,7 @@ export const createUserController = async (req, res) => {
       );
       console.error("Create User Error:", error);
       sendMetricToCloudWatch("api.user.create.error", 1, "Count");
+      logger.info("Error publishing to SNS:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
