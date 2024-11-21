@@ -167,6 +167,13 @@ jobs:
 
           # Get the latest launch template version
           latest_version=$(aws ec2 describe-launch-template-versions \
-            --launch-template-id lt-0618ba0896499b77d \
+            --launch-template-id $launch_template_id \
             --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
           echo "Latest Launch Template Version: $latest_version"
+
+          # explicitly set the newly created version as the default
+          new_version=$((latest_version+1))
+          aws ec2 modify-launch-template \
+            --launch-template-id $launch_template_id \
+            --default-version $new_version
+          echo "Updated launch template to default version $new_version"
