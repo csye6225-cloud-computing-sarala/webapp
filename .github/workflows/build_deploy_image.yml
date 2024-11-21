@@ -208,3 +208,26 @@ jobs:
             --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' \
             --query 'InstanceRefreshId' --output text)
           echo "Instance Refresh ID: $refresh_id"
+
+          # Monitor the instance refresh status
+          while true; do
+            refresh_status=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name $asg_name \
+              --query "InstanceRefreshes[?InstanceRefreshId=='$refresh_id'].Status" \
+              --output text)
+            echo "Instance Refresh Status: $refresh_status"
+
+            if [ "$refresh_status" == "Successful" ]; then
+              echo "Instance refresh completed successfully."
+              break
+            elif [ "$refresh_status" == "Failed" ]; then
+              echo "Instance refresh failed."
+              exit 1
+            elif [ "$refresh_status" == "Cancelled" ]; then
+              echo "Instance refresh was cancelled."
+              exit 1
+            else
+              echo "Instance refresh in progress. Waiting..."
+              sleep 30
+            fi
+          done
