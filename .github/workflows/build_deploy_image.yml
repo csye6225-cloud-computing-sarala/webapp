@@ -145,6 +145,7 @@ jobs:
         run: |
           asg_name="app-asg"
 
+          # Get the Auto Scaling Group name
           asg_nametest=$(aws autoscaling describe-auto-scaling-groups \
             --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
             --output text)
@@ -152,18 +153,19 @@ jobs:
           echo "Latest Auto Scaling Group Name: $asg_nametest"
           echo "Latest Auto Scaling Group Name: $asg_name"
 
+          # Get the Launch Template ID associated with the Auto Scaling Group
           launch_template_id=$(aws autoscaling describe-auto-scaling-groups \
-          --auto-scaling-group-names $asg_name \
-          --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
-          --output text)
+            --auto-scaling-group-names $asg_name \
+            --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
+            --output text)
           echo "Launch Template ID: $launch_template_id"
 
           # Get the latest AMI ID
           latest_ami=$(aws ec2 describe-images \
-          --executable-users self \
-          --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
-          --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
-            echo "Latest AMI ID: $latest_ami"
+            --executable-users self \
+            --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
+            --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
+          echo "Latest AMI ID: $latest_ami"
 
           # Get the latest launch template version
           latest_version=$(aws ec2 describe-launch-template-versions \
@@ -171,9 +173,22 @@ jobs:
             --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
           echo "Latest Launch Template Version: $latest_version"
 
-          # explicitly set the newly created version as the default
+          # Create a new version of the launch template
+          aws ec2 create-launch-template-version \
+            --launch-template-id $launch_template_id \
+            --source-version $latest_version \
+            --launch-template-data "{
+              \"ImageId\": \"$latest_ami\",
+              \"InstanceType\": \"t2.micro\"  # Update the instance type as needed
+            }"
+
+          # Get the newly created version
           new_version=$((latest_version+1))
+          echo "New Launch Template Version: $new_version"
+
+          # Set the newly created version as the default
           aws ec2 modify-launch-template \
             --launch-template-id $launch_template_id \
             --default-version $new_version
+
           echo "Updated launch template to default version $new_version"
