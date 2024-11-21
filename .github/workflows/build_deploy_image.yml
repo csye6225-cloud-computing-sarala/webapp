@@ -158,9 +158,15 @@ jobs:
           --output text)
           echo "Launch Template ID: $launch_template_id"
 
-            # Get the latest AMI ID
+          # Get the latest AMI ID
           latest_ami=$(aws ec2 describe-images \
-            --executable-users self \
-            --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
-            --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
-              echo "Latest AMI ID: $latest_ami"
+          --executable-users self \
+          --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
+          --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
+            echo "Latest AMI ID: $latest_ami"
+
+          # Get the latest launch template version
+          latest_version=$(aws ec2 describe-launch-template-versions \
+            --launch-template-id lt-0618ba0896499b77d \
+            --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
+          echo "Latest Launch Template Version: $latest_version"
