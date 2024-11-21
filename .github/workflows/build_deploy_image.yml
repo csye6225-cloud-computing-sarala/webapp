@@ -180,12 +180,12 @@ jobs:
           -var "aws_region=${{ secrets.AWS_REGION }}" \
           -var "aws_instance_type=${{ secrets.AWS_INSTANCE_TYPE }}" \
           -var "aws_source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
-          -var "aws_vpc_id=${{ secrets.AWS_VPC_ID }}" \
-          -var "aws_subnet_id=${{ secrets.AWS_SUBNET_ID }}" \
+          -var "aws_vpc_id=$vpc_id" \
+          -var "aws_subnet_id=$subnet_id" \
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
-          packer/ubuntu-24.04.pkr.hcl
+          # packer/ubuntu-24.04.pkr.hcl
 
       # - name: Update Launch Template
       #   run: |
