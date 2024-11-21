@@ -20,4 +20,6 @@ router.use("/healthz", (req, res, next) => {
 // Route handler for GET
 router.get("/healthz", handleHealthCheck);
 
+router.get("/cicd", handleHealthCheck);
+
 export default router;
