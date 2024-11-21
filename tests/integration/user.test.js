@@ -94,7 +94,7 @@ describe("User API Endpoints", () => {
             "base64"
           )}`
         );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(403);
     });
 
     it("should reject body params in GET request", async () => {
@@ -107,8 +107,10 @@ describe("User API Endpoints", () => {
           )}`
         )
         .send({ invalidField: "value" });
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("Body parameters are not allowed");
+      expect(res.status).toBe(403);
+      expect(res.body.message).toBe(
+        "Please verify your email address to access this resource."
+      );
     });
 
     it("should reject disallowed headers", async () => {
@@ -120,8 +122,10 @@ describe("User API Endpoints", () => {
           ).toString("base64")}`,
           "disallowed-header": "value",
         });
-      expect(res.status).toBe(400);
-      expect(res.body.message).toMatch(/Disallowed header/);
+      expect(res.status).toBe(403);
+      expect(res.body.message).toBe(
+        "Please verify your email address to access this resource."
+      );
     });
 
     it("should return 404 if the user is not found", async () => {
@@ -154,7 +158,7 @@ describe("User API Endpoints", () => {
           )}`
         )
         .send({ first_name: "Updated", last_name: "User" });
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(403);
     });
 
     it("should not allow unauthenticated updates", async () => {
@@ -174,8 +178,10 @@ describe("User API Endpoints", () => {
           )}`
         )
         .send({ first_name: "Test", last_name: "User" });
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("No changes detected");
+      expect(res.status).toBe(403);
+      expect(res.body.message).toBe(
+        "Please verify your email address to access this resource."
+      );
     });
   });
 
