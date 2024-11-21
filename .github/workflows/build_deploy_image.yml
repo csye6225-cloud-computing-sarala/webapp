@@ -70,25 +70,7 @@ jobs:
         run: |
           zip -r webapp.zip .
 
-      #   # Step 9: AWS configure
-      #   env:
-      #     ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-      # - name: Configure AWS Credentials
-      #   if: env.ENVIRONMENT == 'dev'
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ secrets.AWS_REGION }}
-      # - name: Configure AWS Credentials for demo environment
-      #   if: env.ENVIRONMENT == 'demo'
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ secrets.DEMO_ACCESS }}
-      #     aws-secret-access-key: ${{ secrets.DEMO_SECRET }}
-      #     aws-region: ${{ secrets.AWS_REGION }}
-
-      # Step 6: Set up the environment file
+      # Step 7: Set up the environment file
       - name: Setup Environment File
         run: |
           mkdir -p ./environment
@@ -114,21 +96,21 @@ jobs:
       - name: Show environment file content
         run: cat ./environment/development.env
 
-      # Step 7: Upload artifact (optional)
+      # Step 8: Upload artifact (optional)
       - name: Upload webapp artifact
         uses: actions/upload-artifact@v3
         with:
           name: webapp.zip
           path: webapp.zip
 
-      # Step 8: Install Packer
+      # Step 9: Install Packer
       - name: Install Packer
         run: |
           sudo apt-get update && sudo apt-get install -y wget unzip
           wget https://releases.hashicorp.com/packer/1.8.4/packer_1.8.4_linux_amd64.zip
           unzip -o packer_1.8.4_linux_amd64.zip -d /usr/local/bin/
 
-        # Step 9: AWS configure
+      # Step 10: AWS configure
       - name: Configure AWS credentials
         env:
           AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
@@ -150,12 +132,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_DEMO_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 10: Initialize Packer
+      # Step 11: Initialize Packer
       - name: Initialize Packer (Install Plugins)
         run: |
           packer init packer/ubuntu-24.04.pkr.hcl
 
-      # Step 10: Run Packer Build
+      # Step 12: Run Packer Build
       - name: Run Packer Build
         run: |
           if [ "${{ secrets.ENVIRONMENT }}" == "dev" ]; then
@@ -187,93 +169,95 @@ jobs:
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
           packer/ubuntu-24.04.pkr.hcl
 
-      # - name: Update Launch Template
-      #   run: |
-      #     asg_name="app-asg"
+      # Step 13: Update Launch Template
+      - name: Update Launch Template
+        run: |
+          asg_name="app-asg"
 
-      #     # Get the Auto Scaling Group name
-      #     asg_nametest=$(aws autoscaling describe-auto-scaling-groups \
-      #       --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
-      #       --output text)
+          # Get the Auto Scaling Group name
+          asg_nametest=$(aws autoscaling describe-auto-scaling-groups \
+            --query "AutoScalingGroups | sort_by(@, &AutoScalingGroupARN)[-1].AutoScalingGroupName" \
+            --output text)
 
-      #     echo "Latest Auto Scaling Group Name: $asg_nametest"
-      #     echo "Latest Auto Scaling Group Name: $asg_name"
+          echo "Latest Auto Scaling Group Name: $asg_nametest"
+          echo "Latest Auto Scaling Group Name: $asg_name"
 
-      #     # Get the Launch Template ID associated with the Auto Scaling Group
-      #     launch_template_id=$(aws autoscaling describe-auto-scaling-groups \
-      #       --auto-scaling-group-names $asg_name \
-      #       --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
-      #       --output text)
-      #     echo "Launch Template ID: $launch_template_id"
+          # Get the Launch Template ID associated with the Auto Scaling Group
+          launch_template_id=$(aws autoscaling describe-auto-scaling-groups \
+            --auto-scaling-group-names $asg_name \
+            --query "AutoScalingGroups[0].LaunchTemplate.LaunchTemplateId" \
+            --output text)
+          echo "Launch Template ID: $launch_template_id"
 
-      #     # Get the latest AMI ID
-      #     latest_ami=$(aws ec2 describe-images \
-      #       --executable-users self \
-      #       --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
-      #       --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
-      #     echo "Latest AMI ID: $latest_ami"
+          # Get the latest AMI ID
+          latest_ami=$(aws ec2 describe-images \
+            --executable-users self \
+            --filters "Name=state,Values=available" "Name=architecture,Values=x86_64" "Name=root-device-type,Values=ebs" \
+            --query "reverse(sort_by(Images, &CreationDate))[0].ImageId" --output text)
+          echo "Latest AMI ID: $latest_ami"
 
-      #     # Get the latest launch template version
-      #     latest_version=$(aws ec2 describe-launch-template-versions \
-      #       --launch-template-id $launch_template_id \
-      #       --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
-      #     echo "Latest Launch Template Version: $latest_version"
+          # Get the latest launch template version
+          latest_version=$(aws ec2 describe-launch-template-versions \
+            --launch-template-id $launch_template_id \
+            --query 'LaunchTemplateVersions[-1].VersionNumber' --output text)
+          echo "Latest Launch Template Version: $latest_version"
 
-      #     # Create a new version of the launch template
-      #     aws ec2 create-launch-template-version \
-      #       --launch-template-id $launch_template_id \
-      #       --source-version $latest_version \
-      #       --launch-template-data "{
-      #         \"ImageId\": \"$latest_ami\",
-      #         \"InstanceType\": \"t2.micro\"
-      #       }"
+          # Create a new version of the launch template
+          aws ec2 create-launch-template-version \
+            --launch-template-id $launch_template_id \
+            --source-version $latest_version \
+            --launch-template-data "{
+              \"ImageId\": \"$latest_ami\",
+              \"InstanceType\": \"t2.micro\"
+            }"
 
-      #     # Get the newly created version
-      #     new_version=$((latest_version+1))
-      #     echo "New Launch Template Version: $new_version"
+          # Get the newly created version
+          new_version=$((latest_version+1))
+          echo "New Launch Template Version: $new_version"
 
-      #     # Set the newly created version as the default
-      #     aws ec2 modify-launch-template \
-      #       --launch-template-id $launch_template_id \
-      #       --default-version $new_version
+          # Set the newly created version as the default
+          aws ec2 modify-launch-template \
+            --launch-template-id $launch_template_id \
+            --default-version $new_version
 
-      #     echo "Updated launch template to default version $new_version"
+          echo "Updated launch template to default version $new_version"
 
-      #     # Update the auto-scaling group to use the new launch template version
-      #     aws autoscaling update-auto-scaling-group \
-      #       --auto-scaling-group-name $asg_name \
-      #       --launch-template "LaunchTemplateId=$launch_template_id,Version=$new_version"
-      #     echo "Auto-scaling group updated with new launch template version"
+          # Update the auto-scaling group to use the new launch template version
+          aws autoscaling update-auto-scaling-group \
+            --auto-scaling-group-name $asg_name \
+            --launch-template "LaunchTemplateId=$launch_template_id,Version=$new_version"
+          echo "Auto-scaling group updated with new launch template version"
 
-      # - name: Refresh Auto Scaling Group
-      #   run: |
-      #     asg_name="app-asg"
-      #     # Start instance refresh for the Auto Scaling Group
-      #     refresh_id=$(aws autoscaling start-instance-refresh \
-      #       --auto-scaling-group-name $asg_name \
-      #       --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' \
-      #       --query 'InstanceRefreshId' --output text)
-      #     echo "Instance Refresh ID: $refresh_id"
+      # Step 14: Refresh Auto Scaling Group and Instance
+      - name: Refresh Auto Scaling Group and Instance
+        run: |
+          asg_name="app-asg"
+          # Start instance refresh for the Auto Scaling Group
+          refresh_id=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name $asg_name \
+            --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' \
+            --query 'InstanceRefreshId' --output text)
+          echo "Instance Refresh ID: $refresh_id"
 
-      #     # Monitor the instance refresh status
-      #     while true; do
-      #       refresh_status=$(aws autoscaling describe-instance-refreshes \
-      #         --auto-scaling-group-name $asg_name \
-      #         --query "InstanceRefreshes[?InstanceRefreshId=='$refresh_id'].Status" \
-      #         --output text)
-      #       echo "Instance Refresh Status: $refresh_status"
+          # Monitor the instance refresh status
+          while true; do
+            refresh_status=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name $asg_name \
+              --query "InstanceRefreshes[?InstanceRefreshId=='$refresh_id'].Status" \
+              --output text)
+            echo "Instance Refresh Status: $refresh_status"
 
-      #     if [ "$refresh_status" == "Successful" ]; then
-      #       echo "Instance refresh completed successfully."
-      #       break
-      #     elif [ "$refresh_status" == "Failed" ]; then
-      #       echo "Instance refresh failed."
-      #       exit 1
-      #     elif [ "$refresh_status" == "Cancelled" ]; then
-      #       echo "Instance refresh was cancelled."
-      #       exit 1
-      #     else
-      #       echo "Instance refresh in progress. Waiting..."
-      #       sleep 30
-      #     fi
-      #      done
+          if [ "$refresh_status" == "Successful" ]; then
+            echo "Instance refresh completed successfully."
+            break
+          elif [ "$refresh_status" == "Failed" ]; then
+            echo "Instance refresh failed."
+            exit 1
+          elif [ "$refresh_status" == "Cancelled" ]; then
+            echo "Instance refresh was cancelled."
+            exit 1
+          else
+            echo "Instance refresh in progress. Waiting..."
+            sleep 30
+          fi
+           done
