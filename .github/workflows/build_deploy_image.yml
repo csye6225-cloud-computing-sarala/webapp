@@ -201,6 +201,7 @@ jobs:
 
       - name: Refresh Auto Scaling Group
         run: |
+          asg_name="app-asg"
           # Start instance refresh for the Auto Scaling Group
           refresh_id=$(aws autoscaling start-instance-refresh \
             --auto-scaling-group-name $asg_name \
