@@ -157,6 +157,8 @@ jobs:
 
       # Step 10: Run Packer Build
       - name: Run Packer Build
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           packer build \
           -var "prod_db_user=${{ secrets.PROD_DB_USER }}" \
@@ -164,7 +166,7 @@ jobs:
           -var "prod_db_name=${{ secrets.PROD_DB_NAME }}" \
           -var "prod_db_port=${{ secrets.PROD_DB_PORT }}" \
           -var "aws_profile=${{ secrets.AWS_PROFILE }} \
-          -var "aws_region=$AWS_REGION \
+          -var "aws_region=${AWS_REGION} \
           -var "aws_instance_type=${{ secrets.AWS_INSTANCE_TYPE }}" \
           -var "aws_source_ami=${{ secrets.AWS_SOURCE_AMI }}" \
           -var "aws_vpc_id=${{ secrets.AWS_VPC_ID }}" \
