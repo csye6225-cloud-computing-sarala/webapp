@@ -179,7 +179,7 @@ jobs:
             --source-version $latest_version \
             --launch-template-data "{
               \"ImageId\": \"$latest_ami\",
-              \"InstanceType\": \"t2.micro\"  # Update the instance type as needed
+              \"InstanceType\": \"t2.micro\"
             }"
 
           # Get the newly created version
