@@ -185,7 +185,7 @@ jobs:
           -var "volume_size=${{ secrets.VOLUME_SIZE }}" \
           -var "aws_demo_user=${{ secrets.DEMO_USER }}" \
           -var "aws_dev_user=${{ secrets.DEV_USER }}" \
-          # packer/ubuntu-24.04.pkr.hcl
+          packer/ubuntu-24.04.pkr.hcl
 
       # - name: Update Launch Template
       #   run: |
