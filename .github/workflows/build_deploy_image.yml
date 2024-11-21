@@ -192,3 +192,18 @@ jobs:
             --default-version $new_version
 
           echo "Updated launch template to default version $new_version"
+
+          # Update the auto-scaling group to use the new launch template version
+          aws autoscaling update-auto-scaling-group \
+            --auto-scaling-group-name $asg_name \
+            --launch-template "LaunchTemplateId=$launch_template_id,Version=$new_version"
+          echo "Auto-scaling group updated with new launch template version"
+
+      - name: Refresh Auto Scaling Group
+        run: |
+          # Start instance refresh for the Auto Scaling Group
+          refresh_id=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name $asg_name \
+            --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 50}' \
+            --query 'InstanceRefreshId' --output text)
+          echo "Instance Refresh ID: $refresh_id"
