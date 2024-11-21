@@ -41,7 +41,7 @@ export const verificationController = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    user.email_verified = true;
+    user.isVerified = true;
     await user.save();
 
     // Optionally, delete the verification token after successful verification

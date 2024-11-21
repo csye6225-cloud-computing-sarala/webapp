@@ -93,7 +93,7 @@ export const createUserController = async (req, res) => {
     // Prepare the message payload for SNS
     const messagePayload = {
       email: userData.email,
-      url: verificationUrl, // Include the full verification URL
+      url: verificationUrl,
       timestamp: new Date().toISOString(),
     };
 

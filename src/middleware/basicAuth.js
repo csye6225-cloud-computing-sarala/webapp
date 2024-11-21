@@ -31,6 +31,7 @@ const basicAuth = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    console.log("isVerfified: ", user.isVerified);
     if (!user.isVerified) {
       sendMetricToCloudWatch("user.unverified_access_attempt", 1, "Count");
       logger.warn(`Access denied for unverified user ${user.email}`);

@@ -8,7 +8,6 @@ import {
 import logger from "../utils/logger.js";
 import { sendMetricToCloudWatch } from "../utils/cloudwatchMetrics.js";
 import { verificationController } from "../controllers/verificationController.js";
-import verifyEmailMiddleware from "../middleware/verifyEmail.js";
 
 const userRoutes = express.Router();
 
@@ -133,7 +132,6 @@ const checkAuthorizationHeader = (req, res, next) => {
 userRoutes.get(
   "/user/self",
   basicAuth,
-  verifyEmailMiddleware,
   noCache,
   noQueryParams,
   hasDisallowedHeaders,
@@ -162,7 +160,6 @@ userRoutes.post(
 userRoutes.put(
   "/user/self",
   basicAuth,
-  verifyEmailMiddleware,
   noCache,
   noQueryParams,
   hasDisallowedHeaders,
