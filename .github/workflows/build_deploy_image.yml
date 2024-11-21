@@ -28,15 +28,15 @@ jobs:
         with:
           node-version: "22.2.0"
 
+      - name: Install dependencies
+        run: npm install
+
       # Step 3: Install PostgreSQL
       - name: Install PostgreSQL
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql postgresql-contrib
           sudo systemctl start postgresql
-
-      - name: Install cross-env globally
-        run: npm install -g cross-env
 
       # Step 4: Set up PostgreSQL user and database with logs
       - name: Set up PostgreSQL user and database
