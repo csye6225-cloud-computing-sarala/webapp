@@ -70,23 +70,23 @@ jobs:
         run: |
           zip -r webapp.zip .
 
-        # Step 9: AWS configure
-        env:
-          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-      - name: Configure AWS Credentials
-        if: env.ENVIRONMENT == 'dev'
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Configure AWS Credentials for demo environment
-        if: env.ENVIRONMENT == 'demo'
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.DEMO_ACCESS }}
-          aws-secret-access-key: ${{ secrets.DEMO_SECRET }}
-          aws-region: ${{ secrets.AWS_REGION }}
+      #   # Step 9: AWS configure
+      #   env:
+      #     ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+      # - name: Configure AWS Credentials
+      #   if: env.ENVIRONMENT == 'dev'
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ secrets.AWS_REGION }}
+      # - name: Configure AWS Credentials for demo environment
+      #   if: env.ENVIRONMENT == 'demo'
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.DEMO_ACCESS }}
+      #     aws-secret-access-key: ${{ secrets.DEMO_SECRET }}
+      #     aws-region: ${{ secrets.AWS_REGION }}
 
       # Step 6: Set up the environment file
       - name: Setup Environment File
@@ -132,6 +132,7 @@ jobs:
       - name: Configure AWS credentials
         env:
           AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         if: env.AWS_PROFILE == 'dev'
         uses: aws-actions/configure-aws-credentials@v1
         with:
