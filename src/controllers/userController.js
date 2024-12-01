@@ -76,7 +76,7 @@ export const createUserController = async (req, res) => {
 
     const expiryTime = new Date(Date.now() + 2 * 60 * 1000); // Token valid for 2 min
 
-    const verificationUrl = `http://${process.env.DOMAIN}/v1/user/verify-email?token=${verificationToken}`;
+    const verificationUrl = `https://${process.env.DOMAIN}/v1/user/verify-email?token=${verificationToken}`;
 
     console.log("url: " + verificationUrl);
 
