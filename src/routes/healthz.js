@@ -16,8 +16,20 @@ router.use("/healthz", (req, res, next) => {
   }
 });
 
+router.use("/cicd", (req, res, next) => {
+  if (
+    ["POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"].includes(req.method)
+  ) {
+    logger.warn(`Method ${req.method} not allowed on /healthz`);
+    res.status(405).end();
+  } else {
+    next(); // Continue to the next route handler
+  }
+});
+
 // Route handler for GET requests on /healthz with monitoring
 // Route handler for GET
 router.get("/healthz", handleHealthCheck);
+router.get("/cicd", handleHealthCheck);
 
 export default router;
